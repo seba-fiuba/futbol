@@ -1,13 +1,24 @@
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
+import os
 from routes import jugadores, equipos, partidos, estadisticas
 
-app = FastAPI()
+app = FastAPI(title="Fútbol Manager API", version="1.0.0")
 
-# Configurar CORS para permitir peticiones del frontend
+# Configurar CORS
+# En desarrollo permite localhost, en producción permite cualquier origen
+is_production = os.getenv("RAILWAY_ENVIRONMENT") is not None
+
+if is_production:
+    # En producción, permite todos los orígenes (puedes restringir después)
+    allowed_origins = ["*"]
+else:
+    # En desarrollo, solo localhost
+    allowed_origins = ["http://localhost:5173", "http://127.0.0.1:5173"]
+
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["http://localhost:5173", "http://127.0.0.1:5173"],
+    allow_origins=allowed_origins,
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
