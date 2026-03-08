@@ -1,6 +1,7 @@
-from typing import Optional
+from typing import Optional, List
 from sqlmodel import Field, SQLModel
 from datetime import date
+from pydantic import BaseModel
 
 
 class Jugador(SQLModel, table=True):
@@ -38,3 +39,31 @@ class EstadisticaPartido(SQLModel, table=True):
     jugador_id: int = Field(foreign_key="jugadores.id")
     equipo_id: int = Field(foreign_key="equipos.id")
     goles: int = Field(default=0)
+
+
+# ------------- Models para cargar datos---------------
+
+
+class EstadisticaCreate(BaseModel):
+    jugador_id: int
+    equipo_id: int
+    goles: int
+
+
+class PartidoCreate(BaseModel):
+    fecha: date
+    equipo_local_id: int
+    equipo_visitante_id: int
+    goles_local: int
+    goles_visitante: int
+    estadisticas: List[EstadisticaCreate]
+
+
+class JugadorCreate(BaseModel):
+    nombre: str
+    apodo: Optional[str] = None
+    imagen_url: Optional[str] = None
+
+
+class EquipoCreate(BaseModel):
+    nombre: str
