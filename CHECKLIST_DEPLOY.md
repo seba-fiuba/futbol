@@ -1,4 +1,8 @@
-# ✅ Checklist: Deploy a Railway
+# ✅ Checklist: Deploy
+
+⚠️ **IMPORTANTE:** Railway puede cobrarte si superas $5/mes. Para opciones **100% GRATIS**, lee [DEPLOY_GRATIS_100.md](DEPLOY_GRATIS_100.md)
+
+## Deploy a Railway (Puede tener costos)
 
 Antes de deployar, verifica que tengas todo:
 
@@ -68,6 +72,9 @@ Lee [DEPLOY_RAILWAY.md](DEPLOY_RAILWAY.md) para instrucciones detalladas paso a 
 
 ## 💰 Costos
 
-- Railway: $5 USD/mes gratis (suficiente para empezar)
+- Railway: $5 USD/mes gratis, **pero puede cobrar más si creces** ⚠️
 - Vercel: 100% gratis para siempre
-- **Total: GRATIS** 🎉
+- **Total: Potencialmente NO GRATIS**
+
+### ✅ Alternativa 100% Gratis
+Lee [DEPLOY_GRATIS_100.md](DEPLOY_GRATIS_100.md) para opciones que NUNCA cobran

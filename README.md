@@ -222,7 +222,8 @@ npm run preview
 - [GUIA_USO.md](GUIA_USO.md) - Guía detallada de uso de la aplicación
 - [IMAGENES.md](IMAGENES.md) - Cómo agregar y gestionar imágenes de jugadores
 - [frontend/README.md](frontend/README.md) - Documentación específica del frontend
-- [DEPLOY_RAILWAY.md](DEPLOY_RAILWAY.md) - Guía completa de deployment a Railway
+- **[DEPLOY_GRATIS_100.md](DEPLOY_GRATIS_100.md) - 🎯 Deploy 100% GRATIS (RECOMENDADO)**
+- [DEPLOY_RAILWAY.md](DEPLOY_RAILWAY.md) - Deploy a Railway (puede tener costos)
 - [CHECKLIST_DEPLOY.md](CHECKLIST_DEPLOY.md) - Checklist rápido antes de deployar
 
 ## 📝 Notas de Desarrollo

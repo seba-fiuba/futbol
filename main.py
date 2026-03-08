@@ -7,7 +7,9 @@ app = FastAPI(title="Fútbol Manager API", version="1.0.0")
 
 # Configurar CORS
 # En desarrollo permite localhost, en producción permite cualquier origen
-is_production = os.getenv("RAILWAY_ENVIRONMENT") is not None
+is_production = (
+    os.getenv("RAILWAY_ENVIRONMENT") is not None or os.getenv("RENDER") is not None
+)
 
 if is_production:
     # En producción, permite todos los orígenes (puedes restringir después)
