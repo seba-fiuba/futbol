@@ -1,0 +1,115 @@
+# ========================
+# Python / Backend
+# ========================
+
+# Archivos de entorno
+.env
+.env.local
+.env.*
+!.env.example
+
+# Base de datos
+*.db
+*.sqlite
+*.sqlite3
+
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.Python
+build/
+develop-eggs/
+dist/
+downloads/
+eggs/
+.eggs/
+lib/
+lib64/
+parts/
+sdist/
+var/
+wheels/
+*.egg-info/
+.installed.cfg
+*.egg
+MANIFEST
+
+# Entornos virtuales
+.venv
+venv/
+ENV/
+env/
+
+# Alembic
+alembic.ini.bak
+
+# ========================
+# Node.js / Frontend
+# ========================
+
+# Dependencias
+node_modules/
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+pnpm-debug.log*
+lerna-debug.log*
+
+# SvelteKit
+frontend/.svelte-kit/
+frontend/build/
+frontend/package/
+frontend/.vercel/
+frontend/.netlify/
+
+# Vite
+vite.config.js.timestamp-*
+vite.config.ts.timestamp-*
+
+# ========================
+# Archivos del Sistema
+# ========================
+
+# MacOS
+.DS_Store
+.AppleDouble
+.LSOverride
+
+# Linux
+*~
+.directory
+.Trash-*
+
+# Windows
+Thumbs.db
+Thumbs.db:encryptable
+ehthumbs.db
+ehthumbs_vista.db
+Desktop.ini
+$RECYCLE.BIN/
+
+# ========================
+# IDEs y Editores
+# ========================
+
+# VSCode
+.vscode/
+*.code-workspace
+
+# JetBrains
+.idea/
+*.iml
+*.ipr
+*.iws
+
+# Vim
+*.swp
+*.swo
+*~
+.vim/
+
+# Sublime
+*.sublime-project
+*.sublime-workspace
