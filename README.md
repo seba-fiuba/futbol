@@ -220,13 +220,14 @@ npm run preview
 ## 📚 Documentación Adicional
 
 - [GUIA_USO.md](GUIA_USO.md) - Guía detallada de uso de la aplicación
+- [IMAGENES.md](IMAGENES.md) - Cómo agregar y gestionar imágenes de jugadores
 - [frontend/README.md](frontend/README.md) - Documentación específica del frontend
 
 ## 📝 Notas de Desarrollo
 
 - El backend incluye documentación interactiva en `/docs` (Swagger UI)
 - El frontend usa proxy para las peticiones a `/api`
-- Las imágenes de jugadores son URLs externas
+- Las imágenes de jugadores se guardan en `frontend/static/jugadores/`
 - Los puntos se calculan automáticamente: Victoria = 3, Empate = 1, Derrota = 0
 
 ## 📄 Licencia

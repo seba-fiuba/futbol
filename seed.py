@@ -29,7 +29,19 @@ def seed_equipos():
 
 
 def seed_jugadores():
-    """Carga jugadores iniciales en la base de datos."""
+    """Carga jugadores iniciales en la base de datos.
+
+    NOTAS SOBRE IMÁGENES:
+    - Las imágenes se guardan en: frontend/static/jugadores/
+    - En la BD se guarda la ruta: "/jugadores/nombre-archivo.jpg"
+    - También podes usar URLs externas: "https://..."
+    - Si es None, el frontend muestra un emoji por defecto 👤
+
+    Ejemplos:
+        {"nombre": "Juan", "apodo": "Pepe", "imagen": "/jugadores/juan.jpg"}
+        {"nombre": "María", "apodo": "Mary", "imagen": "https://example.com/maria.jpg"}
+        {"nombre": "Pedro", "apodo": "Pete", "imagen": None}
+    """
     jugadores_data = [
         {"nombre": "Juampy", "apodo": "La Hiena", "imagen": None},
         {"nombre": "Bianca", "apodo": "EL Bicho", "imagen": None},
