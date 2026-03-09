@@ -90,8 +90,8 @@
 <div class="max-w-4xl mx-auto space-y-6">
 	<!-- Header -->
 	<div class="flex items-center justify-between">
-		<h1 class="text-3xl font-bold text-gray-800">➕ Nuevo Partido</h1>
-		<a href="/partidos" class="text-gray-600 hover:text-gray-800">← Volver</a>
+		<h1 class="text-2xl md:text-3xl font-bold text-gray-800">➕ Nuevo Partido</h1>
+		<a href="/partidos" class="text-gray-600 hover:text-gray-800 text-sm md:text-base">← Volver</a>
 	</div>
 
 	{#if loading}

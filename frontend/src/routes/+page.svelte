@@ -1,9 +1,38 @@
 <script>
-	let stats = [
-		{ label: 'Partidos jugados', value: '0', icon: '⚽', color: 'bg-blue-500' },
-		{ label: 'Jugadores', value: '0', icon: '👥', color: 'bg-green-500' },
-		{ label: 'Equipos', value: '0', icon: '🏆', color: 'bg-yellow-500' },
-		{ label: 'Goles totales', value: '0', icon: '🎯', color: 'bg-red-500' }
+	import { onMount } from 'svelte';
+	import { fetchJugadores, fetchEquipos, fetchPartidos, fetchEstadisticas } from '$lib/api';
+
+	let partidosJugados = 0;
+	let totalJugadores = 0;
+	let totalEquipos = 0;
+	let golesTotales = 0;
+	let loading = true;
+
+	onMount(async () => {
+		try {
+			const [jugadores, equipos, partidos, estadisticas] = await Promise.all([
+				fetchJugadores(),
+				fetchEquipos(),
+				fetchPartidos(),
+				fetchEstadisticas()
+			]);
+
+			totalJugadores = jugadores.length;
+			totalEquipos = equipos.length;
+			partidosJugados = partidos.length;
+			golesTotales = estadisticas.reduce((total, est) => total + est.goles, 0);
+		} catch (e) {
+			console.error('Error cargando estadísticas:', e);
+		} finally {
+			loading = false;
+		}
+	});
+
+	$: stats = [
+		{ label: 'Partidos jugados', value: partidosJugados.toString(), icon: '⚽', color: 'bg-blue-500' },
+		{ label: 'Jugadores', value: totalJugadores.toString(), icon: '👥', color: 'bg-green-500' },
+		{ label: 'Equipos', value: totalEquipos.toString(), icon: '🏆', color: 'bg-yellow-500' },
+		{ label: 'Goles totales', value: golesTotales.toString(), icon: '🎯', color: 'bg-red-500' }
 	];
 </script>
 
@@ -13,9 +42,9 @@
 
 <div class="space-y-8">
 	<!-- Hero Section -->
-	<div class="bg-gradient-to-r from-green-600 to-green-700 rounded-lg shadow-lg text-white p-12 text-center">
-		<h1 class="text-5xl font-bold mb-4">⚽ Fútbol Manager</h1>
-		<p class="text-xl opacity-90">Gestiona tus partidos, equipos y jugadores en un solo lugar</p>
+	<div class="bg-gradient-to-r from-green-600 to-green-700 rounded-lg shadow-lg text-white p-6 md:p-12 text-center">
+		<h1 class="text-3xl md:text-5xl font-bold mb-4">⚽ Fútbol Manager</h1>
+		<p class="text-base md:text-xl opacity-90">Gestiona tus partidos, equipos y jugadores en un solo lugar</p>
 	</div>
 
 	<!-- Stats Grid -->

@@ -1,21 +1,31 @@
 <script>
 	import { onMount } from 'svelte';
-	import { fetchJugadores } from '$lib/api';
+	import { fetchJugadores, fetchEstadisticas } from '$lib/api';
 
 	let jugadores = [];
+	let estadisticas = [];
 	let loading = true;
 	let error = null;
 	let searchTerm = '';
 
 	onMount(async () => {
 		try {
-			jugadores = await fetchJugadores();
+			[jugadores, estadisticas] = await Promise.all([
+				fetchJugadores(),
+				fetchEstadisticas()
+			]);
 		} catch (e) {
 			error = e.message;
 		} finally {
 			loading = false;
 		}
 	});
+
+	function getJugadorGoles(jugadorId) {
+		return estadisticas
+			.filter(est => est.jugador_id === jugadorId)
+			.reduce((total, est) => total + est.goles, 0);
+	}
 
 	$: filteredJugadores = jugadores.filter((j) =>
 		j.nombre.toLowerCase().includes(searchTerm.toLowerCase()) ||
@@ -30,7 +40,7 @@
 <div class="space-y-6">
 	<!-- Header -->
 	<div class="flex items-center justify-between">
-		<h1 class="text-3xl font-bold text-gray-800">👥 Jugadores</h1>
+		<h1 class="text-2xl md:text-3xl font-bold text-gray-800">👥 Jugadores</h1>
 	</div>
 
 	<!-- Search Bar -->
@@ -77,8 +87,9 @@
 						{#if jugador.apodo}
 							<p class="text-gray-600 text-center mt-1">"{jugador.apodo}"</p>
 						{/if}
-						<div class="mt-4 pt-4 border-t border-gray-200">
-							<p class="text-sm text-gray-600 text-center">ID: {jugador.id}</p>
+					<div class="mt-4 pt-4 border-t border-gray-200 flex items-center justify-center space-x-2">
+						<span class="text-2xl">⚽</span>
+						<p class="text-lg font-bold text-gray-800">{getJugadorGoles(jugador.id)} goles</p>
 						</div>
 					</div>
 				</div>
