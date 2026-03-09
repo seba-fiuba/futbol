@@ -12,6 +12,8 @@
 *.db
 *.sqlite
 *.sqlite3
+datos_local.sql
+*.sql
 
 # Python
 __pycache__/

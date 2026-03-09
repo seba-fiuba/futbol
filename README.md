@@ -6,23 +6,54 @@ Sistema completo de gestión de partidos de fútbol con API REST y aplicación w
 
 Aplicación full-stack para gestionar partidos de fútbol, equipos, jugadores y estadísticas. Incluye:
 - Backend API REST con FastAPI
-- Frontend web interactivo con SvelteKit
-- Base de datos PostgreSQL
+- Frontend web interactivo con SvelteKit y diseño responsive
+- Base de datos PostgreSQL (Supabase)
 - Sistema de migraciones con Alembic
+- Gestión de imágenes de jugadores
 
 ## 🛠️ Tecnologías
 
 ### Backend
 - **FastAPI** - Framework web de alto rendimiento
 - **SQLModel** - ORM (SQLAlchemy + Pydantic)
-- **PostgreSQL** - Base de datos relacional
+- **PostgreSQL** - Base de datos relacional (Supabase)
 - **Alembic** - Migraciones de base de datos
 - **python-dotenv** - Gestión de variables de entorno
 
 ### Frontend
 - **SvelteKit** - Framework web moderno
-- **Tailwind CSS** - Framework de estilos
+- **Tailwind CSS** - Framework de estilos responsive
 - **Vite** - Build tool y dev server
+
+## 🌐 Despliegue
+
+El proyecto está desplegado en:
+- **Backend**: Render - [https://futbol-api-m1oq.onrender.com](https://futbol-api-m1oq.onrender.com)
+- **Frontend**: Vercel (auto-deploy desde rama main)
+- **Base de datos**: Supabase PostgreSQL
+
+> 💡 Ver [docs/SETUP_RENDER.md](docs/SETUP_RENDER.md) para instrucciones detalladas de deploy
+
+## 📁 Estructura del Proyecto
+
+```
+futbol/
+├── alembic/              # Migraciones de base de datos
+├── routes/               # Endpoints de la API
+├── frontend/             # Aplicación SvelteKit
+│   ├── src/
+│   │   ├── lib/         # API client
+│   │   └── routes/      # Páginas
+│   └── static/          # Imágenes de jugadores
+├── scripts/              # Scripts auxiliares
+│   ├── seed.py          # Datos de prueba
+│   └── actualizar_imagenes.py
+├── docs/                 # Documentación
+├── main.py              # Entrada de la API
+├── models.py            # Modelos de base de datos
+├── database.py          # Configuración de DB
+└── requirements.txt     # Dependencias Python
+```
 
 ## 📋 Requisitos
 
