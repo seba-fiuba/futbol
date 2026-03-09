@@ -58,7 +58,7 @@
 <div class="space-y-6">
 	<!-- Header -->
 	<div class="flex items-center justify-between">
-		<h1 class="text-3xl font-bold text-gray-800">🏆 Equipos y Tabla de Posiciones</h1>
+		<h1 class="text-2xl md:text-3xl font-bold text-gray-800">🏆 Equipos y Tabla de Posiciones</h1>
 	</div>
 
 	{#if loading}
@@ -77,7 +77,8 @@
 		</div>
 	{:else}
 		<div class="bg-white rounded-lg shadow-md overflow-hidden">
-			<div class="overflow-x-auto">
+			<!-- Tablet/Desktop: Tabla completa -->
+			<div class="hidden md:block overflow-x-auto">
 				<table class="w-full">
 					<thead class="bg-green-600 text-white">
 						<tr>
@@ -117,6 +118,50 @@
 						{/each}
 					</tbody>
 				</table>
+			</div>
+
+			<!-- Mobile: Vista de tarjetas -->
+			<div class="md:hidden divide-y divide-gray-200">
+				{#each equiposConStats as equipo, i}
+					<div class="p-4">
+						<div class="flex items-center justify-between mb-3">
+							<div class="flex items-center space-x-3">
+								<span class="text-lg font-bold text-gray-700 bg-green-100 w-8 h-8 rounded-full flex items-center justify-center">{i + 1}</span>
+								<div>
+									<h3 class="font-bold text-gray-800">{equipo.nombre}</h3>
+									<span class="text-sm text-gray-600">{equipo.partidosJugados} partidos</span>
+								</div>
+							</div>
+							<span class="text-2xl font-bold text-green-600">{equipo.puntos} pts</span>
+						</div>
+						<div class="grid grid-cols-3 gap-2 text-center text-sm">
+							<div>
+								<span class="text-gray-600 block">PG</span>
+								<span class="font-semibold">{equipo.victorias}</span>
+							</div>
+							<div>
+								<span class="text-gray-600 block">PE</span>
+								<span class="font-semibold">{equipo.empates}</span>
+							</div>
+							<div>
+								<span class="text-gray-600 block">PP</span>
+								<span class="font-semibold">{equipo.derrotas}</span>
+							</div>
+							<div>
+								<span class="text-gray-600 block">GF</span>
+								<span class="font-semibold">{equipo.golesFavor}</span>
+							</div>
+							<div>
+								<span class="text-gray-600 block">GC</span>
+								<span class="font-semibold">{equipo.golesContra}</span>
+							</div>
+							<div>
+								<span class="text-gray-600 block">DIF</span>
+								<span class="font-semibold">{equipo.golesFavor - equipo.golesContra}</span>
+							</div>
+						</div>
+					</div>
+				{/each}
 			</div>
 		</div>
 

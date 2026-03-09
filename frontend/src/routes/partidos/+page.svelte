@@ -39,11 +39,11 @@
 
 <div class="space-y-6">
 	<!-- Header -->
-	<div class="flex items-center justify-between">
-		<h1 class="text-3xl font-bold text-gray-800">⚽ Partidos</h1>
+	<div class="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
+		<h1 class="text-2xl md:text-3xl font-bold text-gray-800">⚽ Partidos</h1>
 		<a
 			href="/partidos/nuevo"
-			class="bg-green-600 hover:bg-green-700 text-white font-semibold px-6 py-3 rounded-lg shadow-md hover:shadow-lg transition-all flex items-center space-x-2"
+			class="w-full sm:w-auto bg-green-600 hover:bg-green-700 text-white font-semibold px-6 py-3 rounded-lg shadow-md hover:shadow-lg transition-all flex items-center justify-center space-x-2"
 		>
 			<span class="text-xl">➕</span>
 			<span>Nuevo Partido</span>
@@ -85,7 +85,8 @@
 							</a>
 						</div>
 						
-						<div class="grid grid-cols-7 gap-4 items-center">
+			<!-- Desktop View -->
+			<div class="hidden md:grid grid-cols-7 gap-4 items-center">
 							<!-- Equipo Local -->
 							<div class="col-span-3 text-right">
 								<h3 class="text-xl font-bold text-gray-800">{getEquipoNombre(partido.equipo_local_id)}</h3>
@@ -105,6 +106,25 @@
 							<div class="col-span-3 text-left">
 								<h3 class="text-xl font-bold text-gray-800">{getEquipoNombre(partido.equipo_visitante_id)}</h3>
 								<span class="text-sm text-gray-600">Visitante</span>
+							</div>
+						</div>
+
+						<!-- Mobile View -->
+						<div class="md:hidden">
+							<div class="flex items-center justify-between mb-3">
+								<div class="flex-1">
+									<h3 class="font-bold text-gray-800">{getEquipoNombre(partido.equipo_local_id)}</h3>
+									<span class="text-xs text-gray-600">Local</span>
+								</div>
+								<div class="flex items-center space-x-2 px-4">
+									<span class="text-2xl font-bold text-green-600">{partido.goles_local}</span>
+									<span class="text-xl text-gray-400">-</span>
+									<span class="text-2xl font-bold text-green-600">{partido.goles_visitante}</span>
+								</div>
+								<div class="flex-1 text-right">
+									<h3 class="font-bold text-gray-800">{getEquipoNombre(partido.equipo_visitante_id)}</h3>
+									<span class="text-xs text-gray-600">Visitante</span>
+								</div>
 							</div>
 						</div>
 

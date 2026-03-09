@@ -65,7 +65,7 @@
 <div class="space-y-6">
 	<!-- Header -->
 	<div class="flex items-center justify-between">
-		<h1 class="text-3xl font-bold text-gray-800">🏆 Tabla de Goleadores</h1>
+		<h1 class="text-2xl md:text-3xl font-bold text-gray-800">🏆 Tabla de Goleadores</h1>
 	</div>
 
 	{#if loading}
