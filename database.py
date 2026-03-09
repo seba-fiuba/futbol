@@ -18,8 +18,10 @@ if DATABASE_URL.startswith("postgres://"):
 
 # 2. Creamos el motor (engine).
 # echo=True hace que veas en la terminal todo el SQL que se ejecuta por detrás (ideal para aprender).
-# En producción (Railway), deshabilitamos el echo para logs más limpios
-is_production = os.getenv("RAILWAY_ENVIRONMENT") is not None
+# En producción (Railway/Render), deshabilitamos el echo para logs más limpios
+is_production = (
+    os.getenv("RAILWAY_ENVIRONMENT") is not None or os.getenv("RENDER") is not None
+)
 engine = create_engine(DATABASE_URL, echo=not is_production)
 
 
