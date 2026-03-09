@@ -1,0 +1,14 @@
+# Configuración para Render.com
+# Este archivo permite desplegar automáticamente desde el repo
+
+services:
+  - type: web
+    name: futbol-backend
+    runtime: python
+    buildCommand: pip install -r requirements.txt
+    startCommand: sh start.sh
+    envVars:
+      - key: PYTHON_VERSION
+        value: 3.11.0
+      - key: DATABASE_URL
+        sync: false  # Debes configurar esto manualmente en Render
