@@ -1,9 +1,17 @@
-from fastapi import APIRouter, Depends, HTTPException
+from pathlib import Path
+from uuid import uuid4
+
+from fastapi import APIRouter, Depends, File, HTTPException, Request, UploadFile
 from sqlmodel import Session, select
 from database import get_session
 from models import Jugador, JugadorCreate
 
 router = APIRouter(prefix="/Jugadores", tags=["Jugadores"])
+
+UPLOAD_DIR = Path("uploads/jugadores")
+UPLOAD_DIR.mkdir(parents=True, exist_ok=True)
+
+ALLOWED_IMAGE_TYPES = {"image/jpeg", "image/png", "image/webp"}
 
 
 @router.get("/")
@@ -28,6 +36,31 @@ def cargar_jugadores(
     session.refresh(nuevo_jugador)
 
     return {"mensaje": "Jugador registrado con exito", "jugador_id": nuevo_jugador.id}
+
+
+@router.post("/upload-imagen")
+async def upload_imagen_jugador(request: Request, archivo: UploadFile = File(...)):
+    if archivo.content_type not in ALLOWED_IMAGE_TYPES:
+        raise HTTPException(
+            status_code=400,
+            detail="Formato no permitido. Usa JPG, PNG o WEBP",
+        )
+
+    extension = Path(archivo.filename or "").suffix.lower()
+    if extension not in {".jpg", ".jpeg", ".png", ".webp"}:
+        extension = ".jpg"
+
+    filename = f"jugador_{uuid4().hex}{extension}"
+    file_path = UPLOAD_DIR / filename
+
+    content = await archivo.read()
+    if len(content) > 5 * 1024 * 1024:
+        raise HTTPException(status_code=400, detail="La imagen supera 5MB")
+
+    file_path.write_bytes(content)
+
+    image_url = f"{request.base_url}uploads/jugadores/{filename}"
+    return {"url": image_url}
 
 
 @router.put("/{jugador_id}")

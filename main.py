@@ -1,5 +1,6 @@
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
+from fastapi.staticfiles import StaticFiles
 import os
 from routes import jugadores, equipos, partidos, estadisticas
 
@@ -31,3 +32,6 @@ app.include_router(jugadores.router)
 app.include_router(equipos.router)
 app.include_router(partidos.router)
 app.include_router(estadisticas.router)
+
+# Archivos subidos (imagenes de jugadores)
+app.mount("/uploads", StaticFiles(directory="uploads"), name="uploads")

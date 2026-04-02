@@ -18,6 +18,19 @@ export async function cargarJugador(jugadorData) {
 	return response.json();
 }
 
+export async function subirImagenJugador(archivo) {
+	const formData = new FormData();
+	formData.append('archivo', archivo);
+
+	const response = await fetch(`${API_BASE}/Jugadores/upload-imagen`, {
+		method: 'POST',
+		body: formData
+	});
+
+	if (!response.ok) throw new Error('Error al subir imagen');
+	return response.json();
+}
+
 export async function actualizarJugador(jugadorId, jugadorData) {
 	const response = await fetch(`${API_BASE}/Jugadores/${jugadorId}`, {
 		method: 'PUT',

@@ -1,6 +1,12 @@
 <script>
 	import { onMount } from 'svelte';
-	import { actualizarJugador, cargarJugador, fetchJugadores, fetchEstadisticas } from '$lib/api';
+	import {
+		actualizarJugador,
+		cargarJugador,
+		fetchJugadores,
+		fetchEstadisticas,
+		subirImagenJugador
+	} from '$lib/api';
 
 	let jugadores = [];
 	let estadisticas = [];
@@ -13,11 +19,13 @@
 	let nombre = '';
 	let apodo = '';
 	let imagenUrl = '';
+	let imagenFile = null;
 
 	let editJugadorId = null;
 	let editNombre = '';
 	let editApodo = '';
 	let editImagenUrl = '';
+	let editImagenFile = null;
 
 	onMount(async () => {
 		try {
@@ -41,10 +49,16 @@
 		saving = true;
 		error = null;
 		try {
+			let imagenFinal = imagenUrl.trim() || null;
+			if (imagenFile) {
+				const upload = await subirImagenJugador(imagenFile);
+				imagenFinal = upload.url;
+			}
+
 			await cargarJugador({
 				nombre: nombre.trim(),
 				apodo: apodo.trim() || null,
-				imagen_url: imagenUrl.trim() || null
+				imagen_url: imagenFinal
 			});
 
 			[jugadores, estadisticas] = await Promise.all([
@@ -55,6 +69,7 @@
 			nombre = '';
 			apodo = '';
 			imagenUrl = '';
+			imagenFile = null;
 		} catch (e) {
 			error = e.message;
 		} finally {
@@ -74,6 +89,7 @@
 		editNombre = '';
 		editApodo = '';
 		editImagenUrl = '';
+		editImagenFile = null;
 	}
 
 	async function guardarEdicion() {
@@ -85,10 +101,16 @@
 		savingEdit = true;
 		error = null;
 		try {
+			let imagenFinal = editImagenUrl.trim() || null;
+			if (editImagenFile) {
+				const upload = await subirImagenJugador(editImagenFile);
+				imagenFinal = upload.url;
+			}
+
 			await actualizarJugador(editJugadorId, {
 				nombre: editNombre.trim(),
 				apodo: editApodo.trim() || null,
-				imagen_url: editImagenUrl.trim() || null
+				imagen_url: imagenFinal
 			});
 
 			[jugadores, estadisticas] = await Promise.all([
@@ -102,6 +124,14 @@
 		} finally {
 			savingEdit = false;
 		}
+	}
+
+	function onSelectImagen(event) {
+		imagenFile = event.target.files?.[0] || null;
+	}
+
+	function onSelectEditImagen(event) {
+		editImagenFile = event.target.files?.[0] || null;
 	}
 
 	function getJugadorGoles(jugadorId) {
@@ -129,7 +159,7 @@
 	<!-- Alta Jugador -->
 	<form on:submit|preventDefault={guardarJugador} class="bg-white rounded-lg shadow-md p-4 md:p-6 space-y-4">
 		<h2 class="text-lg md:text-xl font-bold text-gray-800">Agregar jugador</h2>
-		<div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+		<div class="grid grid-cols-1 md:grid-cols-2 gap-4">
 			<div>
 				<label for="nombre-jugador" class="block text-sm font-semibold text-gray-700 mb-2">Nombre *</label>
 				<input
@@ -160,6 +190,18 @@
 					placeholder="/jugadores/messi.jpg"
 					class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-green-500"
 				/>
+				<p class="text-xs text-gray-500 mt-1">Opcional: puedes pegar URL o subir archivo</p>
+			</div>
+			<div>
+				<label for="imagen-archivo-jugador" class="block text-sm font-semibold text-gray-700 mb-2">Subir imagen</label>
+				<input
+					id="imagen-archivo-jugador"
+					type="file"
+					accept="image/png,image/jpeg,image/webp"
+					on:change={onSelectImagen}
+					class="w-full px-3 py-2 border border-gray-300 rounded-lg bg-white"
+				/>
+				<p class="text-xs text-gray-500 mt-1">JPG, PNG o WEBP (max 5MB)</p>
 			</div>
 		</div>
 		<div class="flex justify-end">
@@ -186,7 +228,7 @@
 	{#if editJugadorId}
 		<form on:submit|preventDefault={guardarEdicion} class="bg-white rounded-lg shadow-md p-4 md:p-6 space-y-4 border border-blue-200">
 			<h2 class="text-lg md:text-xl font-bold text-gray-800">Editar jugador</h2>
-			<div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+			<div class="grid grid-cols-1 md:grid-cols-2 gap-4">
 				<div>
 					<label for="edit-nombre-jugador" class="block text-sm font-semibold text-gray-700 mb-2">Nombre *</label>
 					<input
@@ -215,6 +257,18 @@
 						placeholder="Deja vacío para quitar imagen"
 						class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
 					/>
+					<p class="text-xs text-gray-500 mt-1">Opcional: URL o archivo</p>
+				</div>
+				<div>
+					<label for="edit-imagen-archivo-jugador" class="block text-sm font-semibold text-gray-700 mb-2">Subir nueva imagen</label>
+					<input
+						id="edit-imagen-archivo-jugador"
+						type="file"
+						accept="image/png,image/jpeg,image/webp"
+						on:change={onSelectEditImagen}
+						class="w-full px-3 py-2 border border-gray-300 rounded-lg bg-white"
+					/>
+					<p class="text-xs text-gray-500 mt-1">Si eliges archivo, reemplaza la URL</p>
 				</div>
 			</div>
 			<div class="flex flex-col sm:flex-row gap-3 sm:justify-end">
