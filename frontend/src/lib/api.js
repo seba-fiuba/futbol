@@ -8,6 +8,26 @@ export async function fetchJugadores() {
 	return response.json();
 }
 
+export async function cargarJugador(jugadorData) {
+	const response = await fetch(`${API_BASE}/Jugadores/`, {
+		method: 'POST',
+		headers: { 'Content-Type': 'application/json' },
+		body: JSON.stringify(jugadorData)
+	});
+	if (!response.ok) throw new Error('Error al registrar jugador');
+	return response.json();
+}
+
+export async function actualizarJugador(jugadorId, jugadorData) {
+	const response = await fetch(`${API_BASE}/Jugadores/${jugadorId}`, {
+		method: 'PUT',
+		headers: { 'Content-Type': 'application/json' },
+		body: JSON.stringify(jugadorData)
+	});
+	if (!response.ok) throw new Error('Error al actualizar jugador');
+	return response.json();
+}
+
 export async function fetchEquipos() {
 	const response = await fetch(`${API_BASE}/equipos/`);
 	if (!response.ok) throw new Error('Error al cargar equipos');

@@ -1,5 +1,5 @@
-from fastapi import APIRouter, Depends
-from sqlmodel import Session, select
+from fastapi import APIRouter, Depends, HTTPException
+from sqlmodel import Session, delete, select
 from database import get_session
 from models import Partido, EstadisticaPartido, PartidoCreate
 
@@ -41,3 +41,39 @@ def cargar_partidos(
     session.commit()
 
     return {"mensaje": "Partido registrado con éxito", "partido_id": nuevo_partido.id}
+
+
+@router.put("/{partido_id}")
+def modificar_partido(
+    partido_id: int,
+    partido_data: PartidoCreate,
+    session: Session = Depends(get_session),
+):
+    partido = session.get(Partido, partido_id)
+    if not partido:
+        raise HTTPException(status_code=404, detail="Partido no encontrado")
+
+    partido.fecha = partido_data.fecha
+    partido.equipo_local_id = partido_data.equipo_local_id
+    partido.equipo_visitante_id = partido_data.equipo_visitante_id
+    partido.goles_local = partido_data.goles_local
+    partido.goles_visitante = partido_data.goles_visitante
+
+    session.add(partido)
+
+    session.exec(
+        delete(EstadisticaPartido).where(EstadisticaPartido.partido_id == partido_id)
+    )
+
+    for est in partido_data.estadisticas:
+        nueva_estadistica = EstadisticaPartido(
+            partido_id=partido_id,
+            jugador_id=est.jugador_id,
+            equipo_id=est.equipo_id,
+            goles=est.goles,
+        )
+        session.add(nueva_estadistica)
+
+    session.commit()
+
+    return {"mensaje": "Partido actualizado con éxito", "partido_id": partido_id}

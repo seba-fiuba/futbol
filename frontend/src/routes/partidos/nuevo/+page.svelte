@@ -26,11 +26,11 @@
 		}
 	});
 
-	function agregarGol(equipoId) {
-		estadisticas = [...estadisticas, { jugador_id: '', equipo_id: equipoId, goles: 1 }];
+	function agregarJugador(equipoId) {
+		estadisticas = [...estadisticas, { jugador_id: '', equipo_id: equipoId, goles: 0 }];
 	}
 
-	function eliminarGol(index) {
+	function eliminarJugador(index) {
 		estadisticas = estadisticas.filter((_, i) => i !== index);
 	}
 
@@ -107,8 +107,9 @@
 		<form on:submit|preventDefault={guardar} class="space-y-6">
 			<!-- Fecha -->
 			<div class="bg-white rounded-lg shadow-md p-6">
-				<label class="block text-sm font-semibold text-gray-700 mb-2">Fecha del partido</label>
+				<label for="fecha-partido" class="block text-sm font-semibold text-gray-700 mb-2">Fecha del partido</label>
 				<input
+					id="fecha-partido"
 					type="date"
 					bind:value={fecha}
 					required
@@ -123,8 +124,9 @@
 				<div class="grid grid-cols-1 md:grid-cols-2 gap-6">
 					<!-- Equipo Local -->
 					<div>
-						<label class="block text-sm font-semibold text-gray-700 mb-2">Equipo Local</label>
+						<label for="equipo-local" class="block text-sm font-semibold text-gray-700 mb-2">Equipo Local</label>
 						<select
+							id="equipo-local"
 							bind:value={equipoLocalId}
 							required
 							class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-green-500 mb-4"
@@ -134,8 +136,9 @@
 								<option value={equipo.id}>{equipo.nombre}</option>
 							{/each}
 						</select>
-						<label class="block text-sm font-semibold text-gray-700 mb-2">Goles Local</label>
+						<label for="goles-local" class="block text-sm font-semibold text-gray-700 mb-2">Goles Local</label>
 						<input
+							id="goles-local"
 							type="number"
 							bind:value={golesLocal}
 							min="0"
@@ -147,8 +150,9 @@
 
 					<!-- Equipo Visitante -->
 					<div>
-						<label class="block text-sm font-semibold text-gray-700 mb-2">Equipo Visitante</label>
+						<label for="equipo-visitante" class="block text-sm font-semibold text-gray-700 mb-2">Equipo Visitante</label>
 						<select
+							id="equipo-visitante"
 							bind:value={equipoVisitanteId}
 							required
 							class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-green-500 mb-4"
@@ -158,8 +162,9 @@
 								<option value={equipo.id}>{equipo.nombre}</option>
 							{/each}
 						</select>
-						<label class="block text-sm font-semibold text-gray-700 mb-2">Goles Visitante</label>
+						<label for="goles-visitante" class="block text-sm font-semibold text-gray-700 mb-2">Goles Visitante</label>
 						<input
+							id="goles-visitante"
 							type="number"
 							bind:value={golesVisitante}
 							min="0"
@@ -171,32 +176,32 @@
 				</div>
 			</div>
 
-			<!-- Estadísticas de Goleadores -->
+			<!-- Jugadores y Goles -->
 			<div class="bg-white rounded-lg shadow-md p-6 space-y-4">
 				<div class="flex items-center justify-between">
-					<h2 class="text-xl font-bold text-gray-800">Goleadores</h2>
+					<h2 class="text-xl font-bold text-gray-800">Jugadores y goles</h2>
 					<div class="space-x-2">
 						<button
 							type="button"
-							on:click={() => agregarGol(equipoLocalId)}
+							on:click={() => agregarJugador(equipoLocalId)}
 							disabled={!equipoLocalId}
 							class="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg text-sm disabled:bg-gray-300 disabled:cursor-not-allowed"
 						>
-							+ Gol Local
+							+ Jugador Local
 						</button>
 						<button
 							type="button"
-							on:click={() => agregarGol(equipoVisitanteId)}
+							on:click={() => agregarJugador(equipoVisitanteId)}
 							disabled={!equipoVisitanteId}
 							class="bg-purple-600 hover:bg-purple-700 text-white px-4 py-2 rounded-lg text-sm disabled:bg-gray-300 disabled:cursor-not-allowed"
 						>
-							+ Gol Visitante
+							+ Jugador Visitante
 						</button>
 					</div>
 				</div>
 
 				{#if estadisticas.length === 0}
-					<p class="text-gray-600 text-center py-4">No hay goles registrados</p>
+					<p class="text-gray-600 text-center py-4">No hay jugadores cargados</p>
 				{:else}
 					<div class="space-y-3">
 						{#each estadisticas as est, i}
@@ -217,13 +222,13 @@
 								<input
 									type="number"
 									bind:value={est.goles}
-									min="1"
+									min="0"
 									required
 									class="w-20 px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-green-500"
 								/>
 								<button
 									type="button"
-									on:click={() => eliminarGol(i)}
+									on:click={() => eliminarJugador(i)}
 									class="text-red-600 hover:text-red-800 font-bold text-xl px-2"
 								>
 									×

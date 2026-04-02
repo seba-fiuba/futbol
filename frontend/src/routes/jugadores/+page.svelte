@@ -1,12 +1,23 @@
 <script>
 	import { onMount } from 'svelte';
-	import { fetchJugadores, fetchEstadisticas } from '$lib/api';
+	import { actualizarJugador, cargarJugador, fetchJugadores, fetchEstadisticas } from '$lib/api';
 
 	let jugadores = [];
 	let estadisticas = [];
 	let loading = true;
 	let error = null;
 	let searchTerm = '';
+	let saving = false;
+	let savingEdit = false;
+
+	let nombre = '';
+	let apodo = '';
+	let imagenUrl = '';
+
+	let editJugadorId = null;
+	let editNombre = '';
+	let editApodo = '';
+	let editImagenUrl = '';
 
 	onMount(async () => {
 		try {
@@ -20,6 +31,78 @@
 			loading = false;
 		}
 	});
+
+	async function guardarJugador() {
+		if (!nombre.trim()) {
+			alert('El nombre es obligatorio');
+			return;
+		}
+
+		saving = true;
+		error = null;
+		try {
+			await cargarJugador({
+				nombre: nombre.trim(),
+				apodo: apodo.trim() || null,
+				imagen_url: imagenUrl.trim() || null
+			});
+
+			[jugadores, estadisticas] = await Promise.all([
+				fetchJugadores(),
+				fetchEstadisticas()
+			]);
+
+			nombre = '';
+			apodo = '';
+			imagenUrl = '';
+		} catch (e) {
+			error = e.message;
+		} finally {
+			saving = false;
+		}
+	}
+
+	function iniciarEdicion(jugador) {
+		editJugadorId = jugador.id;
+		editNombre = jugador.nombre || '';
+		editApodo = jugador.apodo || '';
+		editImagenUrl = jugador.imagen || '';
+	}
+
+	function cancelarEdicion() {
+		editJugadorId = null;
+		editNombre = '';
+		editApodo = '';
+		editImagenUrl = '';
+	}
+
+	async function guardarEdicion() {
+		if (!editNombre.trim() || !editJugadorId) {
+			alert('El nombre es obligatorio');
+			return;
+		}
+
+		savingEdit = true;
+		error = null;
+		try {
+			await actualizarJugador(editJugadorId, {
+				nombre: editNombre.trim(),
+				apodo: editApodo.trim() || null,
+				imagen_url: editImagenUrl.trim() || null
+			});
+
+			[jugadores, estadisticas] = await Promise.all([
+				fetchJugadores(),
+				fetchEstadisticas()
+			]);
+
+			cancelarEdicion();
+		} catch (e) {
+			error = e.message;
+		} finally {
+			savingEdit = false;
+		}
+	}
 
 	function getJugadorGoles(jugadorId) {
 		return estadisticas
@@ -43,6 +126,53 @@
 		<h1 class="text-2xl md:text-3xl font-bold text-gray-800">👥 Jugadores</h1>
 	</div>
 
+	<!-- Alta Jugador -->
+	<form on:submit|preventDefault={guardarJugador} class="bg-white rounded-lg shadow-md p-4 md:p-6 space-y-4">
+		<h2 class="text-lg md:text-xl font-bold text-gray-800">Agregar jugador</h2>
+		<div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+			<div>
+				<label for="nombre-jugador" class="block text-sm font-semibold text-gray-700 mb-2">Nombre *</label>
+				<input
+					id="nombre-jugador"
+					type="text"
+					bind:value={nombre}
+					required
+					placeholder="Ej: Lionel Messi"
+					class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-green-500"
+				/>
+			</div>
+			<div>
+				<label for="apodo-jugador" class="block text-sm font-semibold text-gray-700 mb-2">Apodo</label>
+				<input
+					id="apodo-jugador"
+					type="text"
+					bind:value={apodo}
+					placeholder="Ej: La Pulga"
+					class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-green-500"
+				/>
+			</div>
+			<div>
+				<label for="imagen-jugador" class="block text-sm font-semibold text-gray-700 mb-2">URL imagen</label>
+				<input
+					id="imagen-jugador"
+					type="text"
+					bind:value={imagenUrl}
+					placeholder="/jugadores/messi.jpg"
+					class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-green-500"
+				/>
+			</div>
+		</div>
+		<div class="flex justify-end">
+			<button
+				type="submit"
+				disabled={saving}
+				class="bg-green-600 hover:bg-green-700 text-white font-semibold px-6 py-2 rounded-lg shadow-md hover:shadow-lg transition-all disabled:bg-gray-300 disabled:cursor-not-allowed"
+			>
+				{saving ? 'Guardando...' : 'Guardar jugador'}
+			</button>
+		</div>
+	</form>
+
 	<!-- Search Bar -->
 	<div class="bg-white rounded-lg shadow-md p-4">
 		<input
@@ -52,6 +182,59 @@
 			class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-green-500"
 		/>
 	</div>
+
+	{#if editJugadorId}
+		<form on:submit|preventDefault={guardarEdicion} class="bg-white rounded-lg shadow-md p-4 md:p-6 space-y-4 border border-blue-200">
+			<h2 class="text-lg md:text-xl font-bold text-gray-800">Editar jugador</h2>
+			<div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+				<div>
+					<label for="edit-nombre-jugador" class="block text-sm font-semibold text-gray-700 mb-2">Nombre *</label>
+					<input
+						id="edit-nombre-jugador"
+						type="text"
+						bind:value={editNombre}
+						required
+						class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+					/>
+				</div>
+				<div>
+					<label for="edit-apodo-jugador" class="block text-sm font-semibold text-gray-700 mb-2">Apodo</label>
+					<input
+						id="edit-apodo-jugador"
+						type="text"
+						bind:value={editApodo}
+						class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+					/>
+				</div>
+				<div>
+					<label for="edit-imagen-jugador" class="block text-sm font-semibold text-gray-700 mb-2">URL imagen</label>
+					<input
+						id="edit-imagen-jugador"
+						type="text"
+						bind:value={editImagenUrl}
+						placeholder="Deja vacío para quitar imagen"
+						class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+					/>
+				</div>
+			</div>
+			<div class="flex flex-col sm:flex-row gap-3 sm:justify-end">
+				<button
+					type="button"
+					on:click={cancelarEdicion}
+					class="bg-gray-200 hover:bg-gray-300 text-gray-800 font-semibold px-6 py-2 rounded-lg transition-all"
+				>
+					Cancelar
+				</button>
+				<button
+					type="submit"
+					disabled={savingEdit}
+					class="bg-blue-600 hover:bg-blue-700 text-white font-semibold px-6 py-2 rounded-lg shadow-md hover:shadow-lg transition-all disabled:bg-gray-300 disabled:cursor-not-allowed"
+				>
+					{savingEdit ? 'Guardando...' : 'Guardar cambios'}
+				</button>
+			</div>
+		</form>
+	{/if}
 
 	{#if loading}
 		<div class="text-center py-12">
@@ -87,9 +270,18 @@
 						{#if jugador.apodo}
 							<p class="text-gray-600 text-center mt-1">"{jugador.apodo}"</p>
 						{/if}
-					<div class="mt-4 pt-4 border-t border-gray-200 flex items-center justify-center space-x-2">
-						<span class="text-2xl">⚽</span>
-						<p class="text-lg font-bold text-gray-800">{getJugadorGoles(jugador.id)} goles</p>
+						<div class="mt-4 pt-4 border-t border-gray-200 flex items-center justify-center space-x-2">
+							<span class="text-2xl">⚽</span>
+							<p class="text-lg font-bold text-gray-800">{getJugadorGoles(jugador.id)} goles</p>
+						</div>
+						<div class="mt-3 flex justify-center">
+							<button
+								type="button"
+								on:click={() => iniciarEdicion(jugador)}
+								class="text-sm bg-blue-50 hover:bg-blue-100 text-blue-700 font-semibold px-3 py-1 rounded-lg border border-blue-200"
+							>
+								Editar
+							</button>
 						</div>
 					</div>
 				</div>
