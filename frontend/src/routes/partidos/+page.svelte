@@ -1,11 +1,14 @@
 <script>
 	import { onMount } from 'svelte';
-	import { fetchPartidos, fetchEquipos } from '$lib/api';
+	import { eliminarPartido, fetchPartidos, fetchEquipos } from '$lib/api';
+	import { toast } from '$lib/stores/toast';
 
 	let partidos = [];
 	let equipos = [];
 	let loading = true;
 	let error = null;
+	let deletingPartidoId = null;
+	let pendingDeletePartidoId = null;
 
 	onMount(async () => {
 		try {
@@ -30,6 +33,32 @@
 			month: '2-digit',
 			year: 'numeric'
 		});
+	}
+
+	async function borrarPartido(partido) {
+		if (pendingDeletePartidoId !== partido.id) {
+			pendingDeletePartidoId = partido.id;
+			toast.warning('Presiona Eliminar otra vez para confirmar', 2800);
+			setTimeout(() => {
+				if (pendingDeletePartidoId === partido.id) pendingDeletePartidoId = null;
+			}, 3000);
+			return;
+		}
+
+		pendingDeletePartidoId = null;
+
+		deletingPartidoId = partido.id;
+		error = null;
+		try {
+			await eliminarPartido(partido.id);
+			partidos = partidos.filter((p) => p.id !== partido.id);
+			toast.success('Partido eliminado con exito');
+		} catch (e) {
+			error = e.message;
+			toast.error(e.message || 'No se pudo eliminar el partido');
+		} finally {
+			deletingPartidoId = null;
+		}
 	}
 </script>
 
@@ -77,12 +106,28 @@
 					<div class="p-6">
 						<div class="flex items-center justify-between mb-4">
 							<span class="text-sm text-gray-600 font-medium">{formatFecha(partido.fecha)}</span>
-							<a
-								href="/partidos/{partido.id}/editar"
-								class="text-blue-600 hover:text-blue-800 text-sm font-medium"
-							>
-								Editar
-							</a>
+							<div class="flex items-center gap-3">
+								<a
+									href="/partidos/{partido.id}"
+									class="text-gray-700 hover:text-gray-900 text-sm font-medium"
+								>
+									Detalle
+								</a>
+								<a
+									href="/partidos/{partido.id}/editar"
+									class="text-blue-600 hover:text-blue-800 text-sm font-medium"
+								>
+									Editar
+								</a>
+								<button
+									type="button"
+									on:click={() => borrarPartido(partido)}
+									disabled={deletingPartidoId === partido.id}
+									class="text-red-600 hover:text-red-800 text-sm font-medium disabled:opacity-60"
+								>
+									{deletingPartidoId === partido.id ? 'Eliminando...' : 'Eliminar'}
+								</button>
+							</div>
 						</div>
 						
 			<!-- Desktop View -->

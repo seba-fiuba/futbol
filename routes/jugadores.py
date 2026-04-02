@@ -4,7 +4,7 @@ from uuid import uuid4
 from fastapi import APIRouter, Depends, File, HTTPException, Request, UploadFile
 from sqlmodel import Session, select
 from database import get_session
-from models import Jugador, JugadorCreate
+from models import EstadisticaPartido, Jugador, JugadorCreate
 
 router = APIRouter(prefix="/Jugadores", tags=["Jugadores"])
 
@@ -82,3 +82,24 @@ def editar_jugador(
     session.refresh(jugador)
 
     return {"mensaje": "Jugador actualizado con exito", "jugador_id": jugador.id}
+
+
+@router.delete("/{jugador_id}")
+def eliminar_jugador(jugador_id: int, session: Session = Depends(get_session)):
+    jugador = session.get(Jugador, jugador_id)
+    if not jugador:
+        raise HTTPException(status_code=404, detail="Jugador no encontrado")
+
+    participacion = session.exec(
+        select(EstadisticaPartido.id).where(EstadisticaPartido.jugador_id == jugador_id)
+    ).first()
+    if participacion:
+        raise HTTPException(
+            status_code=409,
+            detail="No se puede eliminar el jugador porque participo en partidos",
+        )
+
+    session.delete(jugador)
+    session.commit()
+
+    return {"mensaje": "Jugador eliminado con exito", "jugador_id": jugador_id}

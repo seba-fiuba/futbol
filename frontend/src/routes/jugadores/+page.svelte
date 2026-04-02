@@ -3,10 +3,12 @@
 	import {
 		actualizarJugador,
 		cargarJugador,
+		eliminarJugador,
 		fetchJugadores,
 		fetchEstadisticas,
 		subirImagenJugador
 	} from '$lib/api';
+	import { toast } from '$lib/stores/toast';
 
 	let jugadores = [];
 	let estadisticas = [];
@@ -15,6 +17,8 @@
 	let searchTerm = '';
 	let saving = false;
 	let savingEdit = false;
+	let deletingJugadorId = null;
+	let pendingDeleteJugadorId = null;
 
 	let nombre = '';
 	let apodo = '';
@@ -42,7 +46,7 @@
 
 	async function guardarJugador() {
 		if (!nombre.trim()) {
-			alert('El nombre es obligatorio');
+			toast.warning('El nombre es obligatorio');
 			return;
 		}
 
@@ -70,8 +74,10 @@
 			apodo = '';
 			imagenUrl = '';
 			imagenFile = null;
+			toast.success('Jugador creado con exito');
 		} catch (e) {
 			error = e.message;
+			toast.error(e.message || 'No se pudo crear el jugador');
 		} finally {
 			saving = false;
 		}
@@ -94,7 +100,7 @@
 
 	async function guardarEdicion() {
 		if (!editNombre.trim() || !editJugadorId) {
-			alert('El nombre es obligatorio');
+			toast.warning('El nombre es obligatorio');
 			return;
 		}
 
@@ -119,8 +125,10 @@
 			]);
 
 			cancelarEdicion();
+			toast.success('Jugador actualizado con exito');
 		} catch (e) {
 			error = e.message;
+			toast.error(e.message || 'No se pudo actualizar el jugador');
 		} finally {
 			savingEdit = false;
 		}
@@ -132,6 +140,39 @@
 
 	function onSelectEditImagen(event) {
 		editImagenFile = event.target.files?.[0] || null;
+	}
+
+	async function borrarJugador(jugador) {
+		if (pendingDeleteJugadorId !== jugador.id) {
+			pendingDeleteJugadorId = jugador.id;
+			toast.warning(`Presiona Eliminar otra vez para confirmar: ${jugador.nombre}`, 2800);
+			setTimeout(() => {
+				if (pendingDeleteJugadorId === jugador.id) pendingDeleteJugadorId = null;
+			}, 3000);
+			return;
+		}
+
+		pendingDeleteJugadorId = null;
+
+		deletingJugadorId = jugador.id;
+		error = null;
+		try {
+			await eliminarJugador(jugador.id);
+			[jugadores, estadisticas] = await Promise.all([
+				fetchJugadores(),
+				fetchEstadisticas()
+			]);
+
+			if (editJugadorId === jugador.id) {
+				cancelarEdicion();
+			}
+			toast.success('Jugador eliminado con exito');
+		} catch (e) {
+			error = e.message;
+			toast.error(e.message || 'No se pudo eliminar el jugador');
+		} finally {
+			deletingJugadorId = null;
+		}
 	}
 
 	function getJugadorGoles(jugadorId) {
@@ -328,13 +369,21 @@
 							<span class="text-2xl">⚽</span>
 							<p class="text-lg font-bold text-gray-800">{getJugadorGoles(jugador.id)} goles</p>
 						</div>
-						<div class="mt-3 flex justify-center">
+						<div class="mt-3 flex justify-center gap-2">
 							<button
 								type="button"
 								on:click={() => iniciarEdicion(jugador)}
 								class="text-sm bg-blue-50 hover:bg-blue-100 text-blue-700 font-semibold px-3 py-1 rounded-lg border border-blue-200"
 							>
 								Editar
+							</button>
+							<button
+								type="button"
+								on:click={() => borrarJugador(jugador)}
+								disabled={deletingJugadorId === jugador.id}
+								class="text-sm bg-red-50 hover:bg-red-100 text-red-700 font-semibold px-3 py-1 rounded-lg border border-red-200 disabled:opacity-60"
+							>
+								{deletingJugadorId === jugador.id ? 'Eliminando...' : 'Eliminar'}
 							</button>
 						</div>
 					</div>

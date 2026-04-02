@@ -2,6 +2,7 @@
 	import { onMount } from 'svelte';
 	import { goto } from '$app/navigation';
 	import { fetchEquipos, fetchJugadores, crearPartido } from '$lib/api';
+	import { toast } from '$lib/stores/toast';
 
 	let equipos = [];
 	let jugadores = [];
@@ -44,19 +45,19 @@
 
 	async function guardar() {
 		if (!equipoLocalId || !equipoVisitanteId) {
-			alert('Debes seleccionar ambos equipos');
+			toast.warning('Debes seleccionar ambos equipos');
 			return;
 		}
 
 		if (equipoLocalId === equipoVisitanteId) {
-			alert('Los equipos deben ser diferentes');
+			toast.warning('Los equipos deben ser diferentes');
 			return;
 		}
 
 		const estadisticasValidas = estadisticas.filter(e => e.jugador_id !== '');
 
 		if (totalGolesLocal !== golesLocal || totalGolesVisitante !== golesVisitante) {
-			alert(`Los goles deben coincidir: Local ${golesLocal} vs ${totalGolesLocal}, Visitante ${golesVisitante} vs ${totalGolesVisitante}`);
+			toast.warning(`Los goles deben coincidir: Local ${golesLocal} vs ${totalGolesLocal}, Visitante ${golesVisitante} vs ${totalGolesVisitante}`);
 			return;
 		}
 
@@ -74,9 +75,11 @@
 					equipo_id: parseInt(e.equipo_id)
 				}))
 			});
+			toast.success('Partido creado con exito');
 			goto('/partidos');
 		} catch (e) {
 			error = e.message;
+			toast.error(e.message || 'No se pudo crear el partido');
 		} finally {
 			saving = false;
 		}

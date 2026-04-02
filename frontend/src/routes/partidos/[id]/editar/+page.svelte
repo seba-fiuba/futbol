@@ -2,6 +2,7 @@
 	import { onMount } from 'svelte';
 	import { page } from '$app/stores';
 	import { goto } from '$app/navigation';
+	import { toast } from '$lib/stores/toast';
 	import {
 		actualizarPartido,
 		fetchEquipos,
@@ -88,19 +89,19 @@
 
 	async function guardar() {
 		if (!equipoLocalId || !equipoVisitanteId) {
-			alert('Debes seleccionar ambos equipos');
+			toast.warning('Debes seleccionar ambos equipos');
 			return;
 		}
 
 		if (equipoLocalId === equipoVisitanteId) {
-			alert('Los equipos deben ser diferentes');
+			toast.warning('Los equipos deben ser diferentes');
 			return;
 		}
 
 		const estadisticasValidas = estadisticas.filter((e) => e.jugador_id !== '');
 
 		if (totalGolesLocal !== Number(golesLocal) || totalGolesVisitante !== Number(golesVisitante)) {
-			alert(
+			toast.warning(
 				`Los goles deben coincidir: Local ${golesLocal} vs ${totalGolesLocal}, Visitante ${golesVisitante} vs ${totalGolesVisitante}`
 			);
 			return;
@@ -120,9 +121,11 @@
 					goles: Number(e.goles)
 				}))
 			});
+			toast.success('Partido actualizado con exito');
 			goto('/partidos');
 		} catch (e) {
 			error = e.message;
+			toast.error(e.message || 'No se pudo actualizar el partido');
 		} finally {
 			saving = false;
 		}

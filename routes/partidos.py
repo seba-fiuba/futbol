@@ -77,3 +77,18 @@ def modificar_partido(
     session.commit()
 
     return {"mensaje": "Partido actualizado con éxito", "partido_id": partido_id}
+
+
+@router.delete("/{partido_id}")
+def eliminar_partido(partido_id: int, session: Session = Depends(get_session)):
+    partido = session.get(Partido, partido_id)
+    if not partido:
+        raise HTTPException(status_code=404, detail="Partido no encontrado")
+
+    session.exec(
+        delete(EstadisticaPartido).where(EstadisticaPartido.partido_id == partido_id)
+    )
+    session.delete(partido)
+    session.commit()
+
+    return {"mensaje": "Partido eliminado con éxito", "partido_id": partido_id}

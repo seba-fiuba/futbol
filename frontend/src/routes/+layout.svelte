@@ -1,5 +1,6 @@
 <script>
 	import '../app.css';
+	import ToastContainer from '$lib/components/ToastContainer.svelte';
 	import { page } from '$app/stores';
 
 	const nav = [
@@ -84,4 +85,6 @@
 			<p>Fútbol Manager © 2026</p>
 		</div>
 	</footer>
+
+	<ToastContainer />
 </div>

@@ -85,7 +85,8 @@
 	{:else}
 		<!-- Podio Top 3 -->
 		{#if goleadores.length >= 3}
-			<div class="grid grid-cols-3 gap-4 mb-8">
+			<!-- Desktop Podium -->
+			<div class="hidden md:grid grid-cols-3 gap-4 mb-8">
 				<!-- Segundo Lugar -->
 				<div class="mt-8">
 					<div class="bg-gradient-to-br from-gray-300 to-gray-400 rounded-lg p-6 text-center shadow-lg">
@@ -156,6 +157,68 @@
 						{/if}
 						<p class="text-3xl font-bold text-gray-800 mt-3">{goleadores[2].goles}</p>
 						<p class="text-sm text-gray-700">goles</p>
+					</div>
+				</div>
+			</div>
+
+			<!-- Mobile Podium -->
+			<div class="md:hidden space-y-4 mb-8">
+				<!-- Primer Lugar -->
+				<div class="bg-gradient-to-br from-yellow-400 to-yellow-500 rounded-lg p-5 text-center shadow-xl">
+					<div class="text-4xl mb-2">🥇</div>
+					{#if getJugadorImagen(goleadores[0].jugador_id)}
+						<img
+							src={getJugadorImagen(goleadores[0].jugador_id)}
+							alt={getJugadorNombre(goleadores[0].jugador_id)}
+							class="w-20 h-20 rounded-full object-cover mx-auto mb-3 border-4 border-white"
+						/>
+					{:else}
+						<div class="w-20 h-20 rounded-full bg-white flex items-center justify-center text-4xl mx-auto mb-3 border-4 border-white">
+							👤
+						</div>
+					{/if}
+					<h3 class="font-bold text-gray-800 text-lg break-words">{getJugadorNombre(goleadores[0].jugador_id)}</h3>
+					{#if getJugadorApodo(goleadores[0].jugador_id)}
+						<p class="text-sm text-gray-700 break-words">"{getJugadorApodo(goleadores[0].jugador_id)}"</p>
+					{/if}
+					<p class="text-3xl font-bold text-gray-800 mt-2">{goleadores[0].goles}</p>
+					<p class="text-sm text-gray-700">goles</p>
+				</div>
+
+				<!-- Segundo y Tercer Lugar -->
+				<div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+					<div class="bg-gradient-to-br from-gray-300 to-gray-400 rounded-lg p-4 text-center shadow-lg">
+						<div class="text-3xl mb-2">🥈</div>
+						{#if getJugadorImagen(goleadores[1].jugador_id)}
+							<img
+								src={getJugadorImagen(goleadores[1].jugador_id)}
+								alt={getJugadorNombre(goleadores[1].jugador_id)}
+								class="w-16 h-16 rounded-full object-cover mx-auto mb-2 border-4 border-white"
+							/>
+						{:else}
+							<div class="w-16 h-16 rounded-full bg-white flex items-center justify-center text-3xl mx-auto mb-2 border-4 border-white">
+								👤
+							</div>
+						{/if}
+						<h3 class="font-bold text-gray-800 break-words">{getJugadorNombre(goleadores[1].jugador_id)}</h3>
+						<p class="text-2xl font-bold text-gray-800 mt-1">{goleadores[1].goles}</p>
+					</div>
+
+					<div class="bg-gradient-to-br from-orange-400 to-orange-500 rounded-lg p-4 text-center shadow-lg">
+						<div class="text-3xl mb-2">🥉</div>
+						{#if getJugadorImagen(goleadores[2].jugador_id)}
+							<img
+								src={getJugadorImagen(goleadores[2].jugador_id)}
+								alt={getJugadorNombre(goleadores[2].jugador_id)}
+								class="w-16 h-16 rounded-full object-cover mx-auto mb-2 border-4 border-white"
+							/>
+						{:else}
+							<div class="w-16 h-16 rounded-full bg-white flex items-center justify-center text-3xl mx-auto mb-2 border-4 border-white">
+								👤
+							</div>
+						{/if}
+						<h3 class="font-bold text-gray-800 break-words">{getJugadorNombre(goleadores[2].jugador_id)}</h3>
+						<p class="text-2xl font-bold text-gray-800 mt-1">{goleadores[2].goles}</p>
 					</div>
 				</div>
 			</div>

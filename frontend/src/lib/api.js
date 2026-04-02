@@ -41,6 +41,23 @@ export async function actualizarJugador(jugadorId, jugadorData) {
 	return response.json();
 }
 
+export async function eliminarJugador(jugadorId) {
+	const response = await fetch(`${API_BASE}/Jugadores/${jugadorId}`, {
+		method: 'DELETE'
+	});
+	if (!response.ok) {
+		let message = 'Error al eliminar jugador';
+		try {
+			const data = await response.json();
+			if (data?.detail) message = data.detail;
+		} catch {
+			// no-op
+		}
+		throw new Error(message);
+	}
+	return response.json();
+}
+
 export async function fetchEquipos() {
 	const response = await fetch(`${API_BASE}/equipos/`);
 	if (!response.ok) throw new Error('Error al cargar equipos');
@@ -76,5 +93,22 @@ export async function actualizarPartido(partidoId, partidoData) {
 		body: JSON.stringify(partidoData)
 	});
 	if (!response.ok) throw new Error('Error al actualizar partido');
+	return response.json();
+}
+
+export async function eliminarPartido(partidoId) {
+	const response = await fetch(`${API_BASE}/partidos/${partidoId}`, {
+		method: 'DELETE'
+	});
+	if (!response.ok) {
+		let message = 'Error al eliminar partido';
+		try {
+			const data = await response.json();
+			if (data?.detail) message = data.detail;
+		} catch {
+			// no-op
+		}
+		throw new Error(message);
+	}
 	return response.json();
 }
