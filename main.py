@@ -27,7 +27,7 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
-# Conectamos las rutas al main
+# Conectamos las rutas al main para mantener la API sincronizada en despliegues
 app.include_router(jugadores.router)
 app.include_router(equipos.router)
 app.include_router(partidos.router)
