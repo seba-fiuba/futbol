@@ -70,6 +70,10 @@
 		estadisticas = estadisticas.filter((_, i) => i !== index);
 	}
 
+	function existeJugador(jugadorId) {
+		return jugadores.some((j) => String(j.id) === String(jugadorId));
+	}
+
 	$: totalGolesLocal = estadisticas
 		.filter((e) => e.equipo_id == equipoLocalId)
 		.reduce((sum, e) => sum + Number(e.goles || 0), 0);
@@ -209,9 +213,9 @@
 			</div>
 
 			<div class="bg-white rounded-lg shadow-md p-6 space-y-4">
-				<div class="flex items-center justify-between">
+				<div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
 					<h2 class="text-xl font-bold text-gray-800">Jugadores y goles</h2>
-					<div class="space-x-2">
+					<div class="flex flex-col sm:flex-row gap-2">
 						<button
 							type="button"
 							on:click={() => agregarJugador(equipoLocalId)}
@@ -236,41 +240,50 @@
 				{:else}
 					<div class="space-y-3">
 						{#each estadisticas as est, i}
-							<div class="flex items-center space-x-3 bg-gray-50 p-3 rounded-lg">
+							<div class="bg-gray-50 p-3 rounded-lg">
+								<div class="flex flex-col sm:flex-row sm:items-center gap-3">
 								<select
 									bind:value={est.jugador_id}
 									required
 									class="flex-1 px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-green-500"
 								>
 									<option value="">Seleccionar jugador</option>
+									{#if est.jugador_id && !existeJugador(est.jugador_id)}
+										<option value={String(est.jugador_id)}>
+											Jugador no disponible (ID {est.jugador_id})
+										</option>
+									{/if}
 									{#each jugadores as jugador}
-										<option value={jugador.id}>{jugador.nombre} {jugador.apodo ? `"${jugador.apodo}"` : ''}</option>
+										<option value={String(jugador.id)}>{jugador.nombre} {jugador.apodo ? `"${jugador.apodo}"` : ''}</option>
 									{/each}
 								</select>
-								<span class="text-sm text-gray-600 font-medium w-32">
-									{est.equipo_id == equipoLocalId ? 'Local' : 'Visitante'}
-								</span>
-								<input
-									type="number"
-									bind:value={est.goles}
-									min="0"
-									required
-									class="w-20 px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-green-500"
-								/>
-								<button
-									type="button"
-									on:click={() => eliminarJugador(i)}
-									class="text-red-600 hover:text-red-800 font-bold text-xl px-2"
-								>
-									×
-								</button>
+									<div class="flex items-center gap-3 sm:gap-2 sm:w-auto">
+										<span class="text-sm text-gray-600 font-medium min-w-20">
+											{est.equipo_id == equipoLocalId ? 'Local' : 'Visitante'}
+										</span>
+										<input
+											type="number"
+											bind:value={est.goles}
+											min="0"
+											required
+											class="w-20 px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-green-500"
+										/>
+										<button
+											type="button"
+											on:click={() => eliminarJugador(i)}
+											class="text-red-600 hover:text-red-800 font-bold text-xl px-2"
+										>
+											×
+										</button>
+									</div>
+								</div>
 							</div>
 						{/each}
 					</div>
 				{/if}
 			</div>
 
-			<div class="flex space-x-4">
+			<div class="flex flex-col sm:flex-row gap-4">
 				<button
 					type="submit"
 					disabled={saving || (Number(golesLocal) + Number(golesVisitante) > 0 && estadisticas.length === 0)}
