@@ -74,6 +74,10 @@
 		return jugadores.some((j) => String(j.id) === String(jugadorId));
 	}
 
+	function existeEquipo(equipoId) {
+		return equipos.some((e) => String(e.id) === String(equipoId));
+	}
+
 	$: totalGolesLocal = estadisticas
 		.filter((e) => e.equipo_id == equipoLocalId)
 		.reduce((sum, e) => sum + Number(e.goles || 0), 0);
@@ -169,8 +173,13 @@
 							class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-green-500 mb-4"
 						>
 							<option value="">Seleccionar equipo</option>
+							{#if equipoLocalId && !existeEquipo(equipoLocalId)}
+								<option value={String(equipoLocalId)}>
+									Equipo no disponible (ID {equipoLocalId})
+								</option>
+							{/if}
 							{#each equipos as equipo}
-								<option value={equipo.id}>{equipo.nombre}</option>
+								<option value={String(equipo.id)}>{equipo.nombre}</option>
 							{/each}
 						</select>
 						<label for="goles-local" class="block text-sm font-semibold text-gray-700 mb-2">Goles Local</label>
@@ -194,8 +203,13 @@
 							class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-green-500 mb-4"
 						>
 							<option value="">Seleccionar equipo</option>
+							{#if equipoVisitanteId && !existeEquipo(equipoVisitanteId)}
+								<option value={String(equipoVisitanteId)}>
+									Equipo no disponible (ID {equipoVisitanteId})
+								</option>
+							{/if}
 							{#each equipos as equipo}
-								<option value={equipo.id}>{equipo.nombre}</option>
+								<option value={String(equipo.id)}>{equipo.nombre}</option>
 							{/each}
 						</select>
 						<label for="goles-visitante" class="block text-sm font-semibold text-gray-700 mb-2">Goles Visitante</label>
