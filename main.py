@@ -28,6 +28,7 @@ app.add_middleware(
 )
 
 # Conectamos las rutas al main para mantener la API sincronizada en despliegues
+# comentario
 app.include_router(jugadores.router)
 app.include_router(equipos.router)
 app.include_router(partidos.router)
