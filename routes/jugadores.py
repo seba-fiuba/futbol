@@ -1,15 +1,11 @@
-from pathlib import Path
-from uuid import uuid4
+import base64
 
-from fastapi import APIRouter, Depends, File, HTTPException, Request, UploadFile
+from fastapi import APIRouter, Depends, File, HTTPException, UploadFile
 from sqlmodel import Session, select
 from database import get_session
 from models import EstadisticaPartido, Jugador, JugadorCreate
 
 router = APIRouter(prefix="/Jugadores", tags=["Jugadores"])
-
-UPLOAD_DIR = Path("uploads/jugadores")
-UPLOAD_DIR.mkdir(parents=True, exist_ok=True)
 
 ALLOWED_IMAGE_TYPES = {"image/jpeg", "image/png", "image/webp"}
 
@@ -39,28 +35,26 @@ def cargar_jugadores(
 
 
 @router.post("/upload-imagen")
-async def upload_imagen_jugador(request: Request, archivo: UploadFile = File(...)):
+async def upload_imagen_jugador(archivo: UploadFile = File(...)):
     if archivo.content_type not in ALLOWED_IMAGE_TYPES:
         raise HTTPException(
             status_code=400,
             detail="Formato no permitido. Usa JPG, PNG o WEBP",
         )
 
-    extension = Path(archivo.filename or "").suffix.lower()
-    if extension not in {".jpg", ".jpeg", ".png", ".webp"}:
-        extension = ".jpg"
-
-    filename = f"jugador_{uuid4().hex}{extension}"
-    file_path = UPLOAD_DIR / filename
-
     content = await archivo.read()
     if len(content) > 5 * 1024 * 1024:
         raise HTTPException(status_code=400, detail="La imagen supera 5MB")
 
-    file_path.write_bytes(content)
+    # Convertir a base64
+    base64_content = base64.b64encode(content).decode("utf-8")
 
-    image_url = f"{request.base_url}uploads/jugadores/{filename}"
-    return {"url": image_url}
+    # Determinar el tipo de media
+    media_type = archivo.content_type or "image/jpeg"
+
+    # Devolver URL data con base64
+    image_data_url = f"data:{media_type};base64,{base64_content}"
+    return {"url": image_data_url}
 
 
 @router.put("/{jugador_id}")
