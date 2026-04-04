@@ -64,15 +64,6 @@
 		imagenFilePreview = '';
 	}
 
-	function obtenerDimensionesImagen(url) {
-		return new Promise((resolve) => {
-			const img = new Image();
-			img.onload = () => resolve({ width: img.naturalWidth, height: img.naturalHeight });
-			img.onerror = () => resolve({ width: 0, height: 0 });
-			img.src = url;
-		});
-	}
-
 	async function guardarJugador() {
 		if (!nombre.trim()) {
 			toast.warning('El nombre es obligatorio');
@@ -171,34 +162,20 @@
 		}
 	}
 
-	async function onSelectImagen(event) {
+	function onSelectImagen(event) {
 		if (imagenFilePreview) {
 			URL.revokeObjectURL(imagenFilePreview);
 		}
 		imagenFile = event.target.files?.[0] || null;
 		imagenFilePreview = imagenFile ? URL.createObjectURL(imagenFile) : '';
-
-		if (imagenFilePreview) {
-			const { width, height } = await obtenerDimensionesImagen(imagenFilePreview);
-			if (width > 0 && height > 0 && (width < 320 || height < 320)) {
-				toast.warning(`La imagen es chica (${width}x${height}). Recomendado: al menos 320x320 para evitar pixelado.`);
-			}
-		}
 	}
 
-	async function onSelectEditImagen(event) {
+	function onSelectEditImagen(event) {
 		if (editImagenFilePreview) {
 			URL.revokeObjectURL(editImagenFilePreview);
 		}
 		editImagenFile = event.target.files?.[0] || null;
 		editImagenFilePreview = editImagenFile ? URL.createObjectURL(editImagenFile) : '';
-
-		if (editImagenFilePreview) {
-			const { width, height } = await obtenerDimensionesImagen(editImagenFilePreview);
-			if (width > 0 && height > 0 && (width < 320 || height < 320)) {
-				toast.warning(`La imagen es chica (${width}x${height}). Recomendado: al menos 320x320 para evitar pixelado.`);
-			}
-		}
 	}
 
 	async function borrarJugador(jugador) {
@@ -296,7 +273,7 @@
 				<div class="bg-white rounded-lg shadow-md hover:shadow-lg transition-shadow overflow-hidden">
 					<div class="bg-gradient-to-br from-green-500 to-green-600 h-32 flex items-center justify-center">
 						{#if jugador.imagen}
-							<img src={jugador.imagen} alt={jugador.nombre} class="w-24 h-24 rounded-full object-contain bg-white p-1 border-4 border-white" />
+							<img src={jugador.imagen} alt={jugador.nombre} class="w-24 h-24 rounded-full object-cover border-4 border-white" />
 						{:else}
 							<div class="w-24 h-24 rounded-full bg-white flex items-center justify-center text-4xl border-4 border-white">
 								👤
@@ -350,7 +327,7 @@
 
 				<div class="flex justify-center">
 					{#if imagenFilePreview || imagenUrl}
-						<img src={imagenFilePreview || imagenUrl} alt="Vista previa" class="w-24 h-24 rounded-full object-contain bg-white p-1 border-4 border-green-100" />
+						<img src={imagenFilePreview || imagenUrl} alt="Vista previa" class="w-24 h-24 rounded-full object-cover border-4 border-green-100" />
 					{:else}
 						<div class="w-24 h-24 rounded-full bg-gray-100 flex items-center justify-center text-3xl">👤</div>
 					{/if}
@@ -398,7 +375,7 @@
 							on:change={onSelectImagen}
 							class="w-full px-3 py-2 border border-gray-300 rounded-lg bg-white"
 						/>
-						<p class="text-xs text-gray-500 mt-1">JPG, PNG o WEBP (max 5MB). Recomendado: minimo 320x320.</p>
+						<p class="text-xs text-gray-500 mt-1">JPG, PNG o WEBP (max 5MB)</p>
 					</div>
 				</div>
 
@@ -427,7 +404,7 @@
 
 				<div class="flex justify-center">
 					{#if editImagenFilePreview || editImagenUrl}
-						<img src={editImagenFilePreview || editImagenUrl} alt={editNombre || 'Jugador'} class="w-24 h-24 rounded-full object-contain bg-white p-1 border-4 border-blue-100" />
+						<img src={editImagenFilePreview || editImagenUrl} alt={editNombre || 'Jugador'} class="w-24 h-24 rounded-full object-cover border-4 border-blue-100" />
 					{:else}
 						<div class="w-24 h-24 rounded-full bg-gray-100 flex items-center justify-center text-3xl">👤</div>
 					{/if}
@@ -473,7 +450,7 @@
 							on:change={onSelectEditImagen}
 							class="w-full px-3 py-2 border border-gray-300 rounded-lg bg-white"
 						/>
-						<p class="text-xs text-gray-500 mt-1">Si eliges archivo, reemplaza la URL. Recomendado: minimo 320x320.</p>
+						<p class="text-xs text-gray-500 mt-1">Si eliges archivo, reemplaza la URL</p>
 					</div>
 				</div>
 
