@@ -120,44 +120,61 @@
 				</table>
 			</div>
 
-			<!-- Mobile: Vista de tarjetas -->
-			<div class="md:hidden divide-y divide-gray-200">
+			<!-- Mobile: Vista de tarjetas mejorada -->
+			<div class="md:hidden space-y-4 p-4">
 				{#each equiposConStats as equipo, i}
-					<div class="p-4">
-						<div class="flex items-center justify-between mb-3">
+					<div class="bg-gradient-to-r from-green-50 to-blue-50 rounded-lg p-5 border-2 border-green-200 shadow-sm">
+						<!-- Header de tarjeta -->
+						<div class="flex items-center justify-between mb-4 pb-3 border-b-2 border-green-200">
 							<div class="flex items-center space-x-3">
-								<span class="text-lg font-bold text-gray-700 bg-green-100 w-8 h-8 rounded-full flex items-center justify-center">{i + 1}</span>
+								<div class="bg-green-600 text-white w-10 h-10 rounded-full flex items-center justify-center font-bold text-lg">
+									{i + 1}
+								</div>
 								<div>
-									<h3 class="font-bold text-gray-800">{equipo.nombre}</h3>
-									<span class="text-sm text-gray-600">{equipo.partidosJugados} partidos</span>
+									<h3 class="font-bold text-gray-800 text-lg">{equipo.nombre}</h3>
+									<span class="text-xs text-gray-600">{equipo.partidosJugados} partidos jugados</span>
 								</div>
 							</div>
-							<span class="text-2xl font-bold text-green-600">{equipo.puntos} pts</span>
+							<div class="text-right">
+								<div class="text-3xl font-bold text-green-600">{equipo.puntos}</div>
+								<div class="text-xs text-gray-600 font-semibold">Puntos</div>
+							</div>
 						</div>
-						<div class="grid grid-cols-3 gap-2 text-center text-sm">
-							<div>
-								<span class="text-gray-600 block">PG</span>
-								<span class="font-semibold">{equipo.victorias}</span>
+
+						<!-- Estadísticas en 2 filas -->
+						<div class="space-y-3">
+							<!-- Fila 1: Resultados -->
+							<div class="grid grid-cols-3 gap-3">
+								<div class="bg-white rounded-lg p-3 text-center border-l-4 border-green-500">
+									<div class="text-2xl font-bold text-green-600">{equipo.victorias}</div>
+									<div class="text-xs text-gray-600 font-semibold">Ganados</div>
+								</div>
+								<div class="bg-white rounded-lg p-3 text-center border-l-4 border-yellow-500">
+									<div class="text-2xl font-bold text-yellow-600">{equipo.empates}</div>
+									<div class="text-xs text-gray-600 font-semibold">Empatados</div>
+								</div>
+								<div class="bg-white rounded-lg p-3 text-center border-l-4 border-red-500">
+									<div class="text-2xl font-bold text-red-600">{equipo.derrotas}</div>
+									<div class="text-xs text-gray-600 font-semibold">Perdidos</div>
+								</div>
 							</div>
-							<div>
-								<span class="text-gray-600 block">PE</span>
-								<span class="font-semibold">{equipo.empates}</span>
-							</div>
-							<div>
-								<span class="text-gray-600 block">PP</span>
-								<span class="font-semibold">{equipo.derrotas}</span>
-							</div>
-							<div>
-								<span class="text-gray-600 block">GF</span>
-								<span class="font-semibold">{equipo.golesFavor}</span>
-							</div>
-							<div>
-								<span class="text-gray-600 block">GC</span>
-								<span class="font-semibold">{equipo.golesContra}</span>
-							</div>
-							<div>
-								<span class="text-gray-600 block">DIF</span>
-								<span class="font-semibold">{equipo.golesFavor - equipo.golesContra}</span>
+
+							<!-- Fila 2: Goles -->
+							<div class="grid grid-cols-3 gap-3">
+								<div class="bg-white rounded-lg p-3 text-center">
+									<div class="text-sm text-gray-600 font-semibold">GF</div>
+									<div class="text-2xl font-bold text-gray-800">{equipo.golesFavor}</div>
+								</div>
+								<div class="bg-white rounded-lg p-3 text-center">
+									<div class="text-sm text-gray-600 font-semibold">GC</div>
+									<div class="text-2xl font-bold text-gray-800">{equipo.golesContra}</div>
+								</div>
+								<div class="bg-white rounded-lg p-3 text-center">
+									<div class="text-sm text-gray-600 font-semibold">DIF</div>
+									<div class="text-2xl font-bold {equipo.golesFavor - equipo.golesContra > 0 ? 'text-green-600' : equipo.golesFavor - equipo.golesContra < 0 ? 'text-red-600' : 'text-gray-600'}">
+										{equipo.golesFavor - equipo.golesContra > 0 ? '+' : ''}{equipo.golesFavor - equipo.golesContra}
+									</div>
+								</div>
 							</div>
 						</div>
 					</div>
