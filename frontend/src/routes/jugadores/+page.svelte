@@ -19,17 +19,21 @@
 	let savingEdit = false;
 	let deletingJugadorId = null;
 	let pendingDeleteJugadorId = null;
+	let showAddModal = false;
+	let showEditModal = false;
 
 	let nombre = '';
 	let apodo = '';
 	let imagenUrl = '';
 	let imagenFile = null;
+	let imagenFilePreview = '';
 
 	let editJugadorId = null;
 	let editNombre = '';
 	let editApodo = '';
 	let editImagenUrl = '';
 	let editImagenFile = null;
+	let editImagenFilePreview = '';
 
 	onMount(async () => {
 		try {
@@ -43,6 +47,22 @@
 			loading = false;
 		}
 	});
+
+	function abrirAgregarJugador() {
+		showAddModal = true;
+	}
+
+	function cerrarAgregarJugador() {
+		if (imagenFilePreview) {
+			URL.revokeObjectURL(imagenFilePreview);
+		}
+		showAddModal = false;
+		nombre = '';
+		apodo = '';
+		imagenUrl = '';
+		imagenFile = null;
+		imagenFilePreview = '';
+	}
 
 	async function guardarJugador() {
 		if (!nombre.trim()) {
@@ -70,10 +90,7 @@
 				fetchEstadisticas()
 			]);
 
-			nombre = '';
-			apodo = '';
-			imagenUrl = '';
-			imagenFile = null;
+			cerrarAgregarJugador();
 			toast.success('Jugador creado con exito');
 		} catch (e) {
 			error = e.message;
@@ -84,18 +101,29 @@
 	}
 
 	function iniciarEdicion(jugador) {
+		if (editImagenFilePreview) {
+			URL.revokeObjectURL(editImagenFilePreview);
+		}
 		editJugadorId = jugador.id;
 		editNombre = jugador.nombre || '';
 		editApodo = jugador.apodo || '';
 		editImagenUrl = jugador.imagen || '';
+		editImagenFile = null;
+		editImagenFilePreview = '';
+		showEditModal = true;
 	}
 
 	function cancelarEdicion() {
+		if (editImagenFilePreview) {
+			URL.revokeObjectURL(editImagenFilePreview);
+		}
+		showEditModal = false;
 		editJugadorId = null;
 		editNombre = '';
 		editApodo = '';
 		editImagenUrl = '';
 		editImagenFile = null;
+		editImagenFilePreview = '';
 	}
 
 	async function guardarEdicion() {
@@ -135,11 +163,19 @@
 	}
 
 	function onSelectImagen(event) {
+		if (imagenFilePreview) {
+			URL.revokeObjectURL(imagenFilePreview);
+		}
 		imagenFile = event.target.files?.[0] || null;
+		imagenFilePreview = imagenFile ? URL.createObjectURL(imagenFile) : '';
 	}
 
 	function onSelectEditImagen(event) {
+		if (editImagenFilePreview) {
+			URL.revokeObjectURL(editImagenFilePreview);
+		}
 		editImagenFile = event.target.files?.[0] || null;
+		editImagenFilePreview = editImagenFile ? URL.createObjectURL(editImagenFile) : '';
 	}
 
 	async function borrarJugador(jugador) {
@@ -195,66 +231,14 @@
 	<!-- Header -->
 	<div class="flex items-center justify-between">
 		<h1 class="text-2xl md:text-3xl font-bold text-gray-800">👥 Jugadores</h1>
+		<button
+			type="button"
+			on:click={abrirAgregarJugador}
+			class="bg-green-600 hover:bg-green-700 text-white font-semibold px-4 py-2 rounded-lg shadow-md hover:shadow-lg transition-all"
+		>
+			+ Agregar jugador
+		</button>
 	</div>
-
-	<!-- Alta Jugador -->
-	<form on:submit|preventDefault={guardarJugador} class="bg-white rounded-lg shadow-md p-4 md:p-6 space-y-4">
-		<h2 class="text-lg md:text-xl font-bold text-gray-800">Agregar jugador</h2>
-		<div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-			<div>
-				<label for="nombre-jugador" class="block text-sm font-semibold text-gray-700 mb-2">Nombre *</label>
-				<input
-					id="nombre-jugador"
-					type="text"
-					bind:value={nombre}
-					required
-					placeholder="Ej: Lionel Messi"
-					class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-green-500"
-				/>
-			</div>
-			<div>
-				<label for="apodo-jugador" class="block text-sm font-semibold text-gray-700 mb-2">Apodo</label>
-				<input
-					id="apodo-jugador"
-					type="text"
-					bind:value={apodo}
-					placeholder="Ej: La Pulga"
-					class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-green-500"
-				/>
-			</div>
-			<div>
-				<label for="imagen-jugador" class="block text-sm font-semibold text-gray-700 mb-2">URL imagen</label>
-				<input
-					id="imagen-jugador"
-					type="text"
-					bind:value={imagenUrl}
-					placeholder="/jugadores/messi.jpg"
-					class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-green-500"
-				/>
-				<p class="text-xs text-gray-500 mt-1">Opcional: puedes pegar URL o subir archivo</p>
-			</div>
-			<div>
-				<label for="imagen-archivo-jugador" class="block text-sm font-semibold text-gray-700 mb-2">Subir imagen</label>
-				<input
-					id="imagen-archivo-jugador"
-					type="file"
-					accept="image/png,image/jpeg,image/webp"
-					on:change={onSelectImagen}
-					class="w-full px-3 py-2 border border-gray-300 rounded-lg bg-white"
-				/>
-				<p class="text-xs text-gray-500 mt-1">JPG, PNG o WEBP (max 5MB)</p>
-			</div>
-		</div>
-		<div class="flex justify-end">
-			<button
-				type="submit"
-				disabled={saving}
-				class="bg-green-600 hover:bg-green-700 text-white font-semibold px-6 py-2 rounded-lg shadow-md hover:shadow-lg transition-all disabled:bg-gray-300 disabled:cursor-not-allowed"
-			>
-				{saving ? 'Guardando...' : 'Guardar jugador'}
-			</button>
-		</div>
-	</form>
 
 	<!-- Search Bar -->
 	<div class="bg-white rounded-lg shadow-md p-4">
@@ -266,70 +250,6 @@
 		/>
 	</div>
 
-	{#if editJugadorId}
-		<form on:submit|preventDefault={guardarEdicion} class="bg-white rounded-lg shadow-md p-4 md:p-6 space-y-4 border border-blue-200">
-			<h2 class="text-lg md:text-xl font-bold text-gray-800">Editar jugador</h2>
-			<div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-				<div>
-					<label for="edit-nombre-jugador" class="block text-sm font-semibold text-gray-700 mb-2">Nombre *</label>
-					<input
-						id="edit-nombre-jugador"
-						type="text"
-						bind:value={editNombre}
-						required
-						class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
-					/>
-				</div>
-				<div>
-					<label for="edit-apodo-jugador" class="block text-sm font-semibold text-gray-700 mb-2">Apodo</label>
-					<input
-						id="edit-apodo-jugador"
-						type="text"
-						bind:value={editApodo}
-						class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
-					/>
-				</div>
-				<div>
-					<label for="edit-imagen-jugador" class="block text-sm font-semibold text-gray-700 mb-2">URL imagen</label>
-					<input
-						id="edit-imagen-jugador"
-						type="text"
-						bind:value={editImagenUrl}
-						placeholder="Deja vacío para quitar imagen"
-						class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
-					/>
-					<p class="text-xs text-gray-500 mt-1">Opcional: URL o archivo</p>
-				</div>
-				<div>
-					<label for="edit-imagen-archivo-jugador" class="block text-sm font-semibold text-gray-700 mb-2">Subir nueva imagen</label>
-					<input
-						id="edit-imagen-archivo-jugador"
-						type="file"
-						accept="image/png,image/jpeg,image/webp"
-						on:change={onSelectEditImagen}
-						class="w-full px-3 py-2 border border-gray-300 rounded-lg bg-white"
-					/>
-					<p class="text-xs text-gray-500 mt-1">Si eliges archivo, reemplaza la URL</p>
-				</div>
-			</div>
-			<div class="flex flex-col sm:flex-row gap-3 sm:justify-end">
-				<button
-					type="button"
-					on:click={cancelarEdicion}
-					class="bg-gray-200 hover:bg-gray-300 text-gray-800 font-semibold px-6 py-2 rounded-lg transition-all"
-				>
-					Cancelar
-				</button>
-				<button
-					type="submit"
-					disabled={savingEdit}
-					class="bg-blue-600 hover:bg-blue-700 text-white font-semibold px-6 py-2 rounded-lg shadow-md hover:shadow-lg transition-all disabled:bg-gray-300 disabled:cursor-not-allowed"
-				>
-					{savingEdit ? 'Guardando...' : 'Guardar cambios'}
-				</button>
-			</div>
-		</form>
-	{/if}
 
 	{#if loading}
 		<div class="text-center py-12">
@@ -393,6 +313,164 @@
 
 		<div class="text-center text-gray-600">
 			Mostrando {filteredJugadores.length} de {jugadores.length} jugadores
+		</div>
+	{/if}
+
+	{#if showAddModal}
+		<div class="fixed inset-0 z-50 flex items-center justify-center p-4">
+			<button class="absolute inset-0 bg-black/50" aria-label="Cerrar" on:click={cerrarAgregarJugador}></button>
+			<form on:submit|preventDefault={guardarJugador} class="relative w-full max-w-xl bg-white rounded-xl shadow-2xl p-5 md:p-6 space-y-4 max-h-[90vh] overflow-y-auto">
+				<div class="flex items-center justify-between">
+					<h2 class="text-xl font-bold text-gray-800">Agregar jugador</h2>
+					<button type="button" on:click={cerrarAgregarJugador} class="text-gray-500 hover:text-gray-800 text-2xl leading-none">×</button>
+				</div>
+
+				<div class="flex justify-center">
+					{#if imagenFilePreview || imagenUrl}
+						<img src={imagenFilePreview || imagenUrl} alt="Vista previa" class="w-24 h-24 rounded-full object-cover border-4 border-green-100" />
+					{:else}
+						<div class="w-24 h-24 rounded-full bg-gray-100 flex items-center justify-center text-3xl">👤</div>
+					{/if}
+				</div>
+
+				<div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+					<div>
+						<label for="nombre-jugador" class="block text-sm font-semibold text-gray-700 mb-2">Nombre *</label>
+						<input
+							id="nombre-jugador"
+							type="text"
+							bind:value={nombre}
+							required
+							placeholder="Ej: Lionel Messi"
+							class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-green-500"
+						/>
+					</div>
+					<div>
+						<label for="apodo-jugador" class="block text-sm font-semibold text-gray-700 mb-2">Apodo</label>
+						<input
+							id="apodo-jugador"
+							type="text"
+							bind:value={apodo}
+							placeholder="Ej: La Pulga"
+							class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-green-500"
+						/>
+					</div>
+					<div>
+						<label for="imagen-jugador" class="block text-sm font-semibold text-gray-700 mb-2">URL imagen</label>
+						<input
+							id="imagen-jugador"
+							type="text"
+							bind:value={imagenUrl}
+							placeholder="https://..."
+							class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-green-500"
+						/>
+						<p class="text-xs text-gray-500 mt-1">Opcional: puedes pegar URL o subir archivo</p>
+					</div>
+					<div>
+						<label for="imagen-archivo-jugador" class="block text-sm font-semibold text-gray-700 mb-2">Subir imagen</label>
+						<input
+							id="imagen-archivo-jugador"
+							type="file"
+							accept="image/png,image/jpeg,image/webp"
+							on:change={onSelectImagen}
+							class="w-full px-3 py-2 border border-gray-300 rounded-lg bg-white"
+						/>
+						<p class="text-xs text-gray-500 mt-1">JPG, PNG o WEBP (max 5MB)</p>
+					</div>
+				</div>
+
+				<div class="flex flex-col sm:flex-row gap-3 sm:justify-end">
+					<button type="button" on:click={cerrarAgregarJugador} class="bg-gray-200 hover:bg-gray-300 text-gray-800 font-semibold px-6 py-2 rounded-lg transition-all">Cancelar</button>
+					<button
+						type="submit"
+						disabled={saving}
+						class="bg-green-600 hover:bg-green-700 text-white font-semibold px-6 py-2 rounded-lg shadow-md hover:shadow-lg transition-all disabled:bg-gray-300 disabled:cursor-not-allowed"
+					>
+						{saving ? 'Guardando...' : 'Guardar jugador'}
+					</button>
+				</div>
+			</form>
+		</div>
+	{/if}
+
+	{#if showEditModal}
+		<div class="fixed inset-0 z-50 flex items-center justify-center p-4">
+			<button class="absolute inset-0 bg-black/50" aria-label="Cerrar" on:click={cancelarEdicion}></button>
+			<form on:submit|preventDefault={guardarEdicion} class="relative w-full max-w-xl bg-white rounded-xl shadow-2xl p-5 md:p-6 space-y-4 max-h-[90vh] overflow-y-auto border border-blue-100">
+				<div class="flex items-center justify-between">
+					<h2 class="text-xl font-bold text-gray-800">Editar jugador</h2>
+					<button type="button" on:click={cancelarEdicion} class="text-gray-500 hover:text-gray-800 text-2xl leading-none">×</button>
+				</div>
+
+				<div class="flex justify-center">
+					{#if editImagenFilePreview || editImagenUrl}
+						<img src={editImagenFilePreview || editImagenUrl} alt={editNombre || 'Jugador'} class="w-24 h-24 rounded-full object-cover border-4 border-blue-100" />
+					{:else}
+						<div class="w-24 h-24 rounded-full bg-gray-100 flex items-center justify-center text-3xl">👤</div>
+					{/if}
+				</div>
+
+				<div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+					<div>
+						<label for="edit-nombre-jugador" class="block text-sm font-semibold text-gray-700 mb-2">Nombre *</label>
+						<input
+							id="edit-nombre-jugador"
+							type="text"
+							bind:value={editNombre}
+							required
+							class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+						/>
+					</div>
+					<div>
+						<label for="edit-apodo-jugador" class="block text-sm font-semibold text-gray-700 mb-2">Apodo</label>
+						<input
+							id="edit-apodo-jugador"
+							type="text"
+							bind:value={editApodo}
+							class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+						/>
+					</div>
+					<div>
+						<label for="edit-imagen-jugador" class="block text-sm font-semibold text-gray-700 mb-2">URL imagen</label>
+						<input
+							id="edit-imagen-jugador"
+							type="text"
+							bind:value={editImagenUrl}
+							placeholder="Deja vacío para quitar imagen"
+							class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+						/>
+						<p class="text-xs text-gray-500 mt-1">Opcional: URL o archivo</p>
+					</div>
+					<div>
+						<label for="edit-imagen-archivo-jugador" class="block text-sm font-semibold text-gray-700 mb-2">Subir nueva imagen</label>
+						<input
+							id="edit-imagen-archivo-jugador"
+							type="file"
+							accept="image/png,image/jpeg,image/webp"
+							on:change={onSelectEditImagen}
+							class="w-full px-3 py-2 border border-gray-300 rounded-lg bg-white"
+						/>
+						<p class="text-xs text-gray-500 mt-1">Si eliges archivo, reemplaza la URL</p>
+					</div>
+				</div>
+
+				<div class="flex flex-col sm:flex-row gap-3 sm:justify-end">
+					<button
+						type="button"
+						on:click={cancelarEdicion}
+						class="bg-gray-200 hover:bg-gray-300 text-gray-800 font-semibold px-6 py-2 rounded-lg transition-all"
+					>
+						Cancelar
+					</button>
+					<button
+						type="submit"
+						disabled={savingEdit}
+						class="bg-blue-600 hover:bg-blue-700 text-white font-semibold px-6 py-2 rounded-lg shadow-md hover:shadow-lg transition-all disabled:bg-gray-300 disabled:cursor-not-allowed"
+					>
+						{savingEdit ? 'Guardando...' : 'Guardar cambios'}
+					</button>
+				</div>
+			</form>
 		</div>
 	{/if}
 </div>
