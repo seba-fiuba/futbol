@@ -54,7 +54,8 @@
 				.map((e) => ({
 					jugador_id: String(e.jugador_id),
 					equipo_id: String(e.equipo_id),
-					goles: e.goles
+					goles: e.goles,
+					busqueda: ''
 				}));
 		} catch (e) {
 			error = e.message;
@@ -64,11 +65,31 @@
 	});
 
 	function agregarJugador(equipoId) {
-		estadisticas = [...estadisticas, { jugador_id: '', equipo_id: equipoId, goles: 0 }];
+		estadisticas = [...estadisticas, { jugador_id: '', equipo_id: equipoId, goles: 0, busqueda: '' }];
 	}
 
 	function eliminarJugador(index) {
 		estadisticas = estadisticas.filter((_, i) => i !== index);
+	}
+
+	function filtrarJugadores(indice) {
+		const est = estadisticas[indice];
+		if (!est.busqueda) return jugadores;
+		const term = est.busqueda.toLowerCase();
+		return jugadores.filter(j => 
+			j.nombre.toLowerCase().includes(term) || 
+			(j.apodo && j.apodo.toLowerCase().includes(term))
+		);
+	}
+
+	function incrementarGoles(index) {
+		estadisticas[index].goles = Math.max(0, Number(estadisticas[index].goles) + 1);
+		estadisticas = estadisticas;
+	}
+
+	function decrementarGoles(index) {
+		estadisticas[index].goles = Math.max(0, Number(estadisticas[index].goles) - 1);
+		estadisticas = estadisticas;
 	}
 
 	function existeJugador(jugadorId) {
@@ -232,7 +253,7 @@
 			<div class="bg-white rounded-lg shadow-md p-6 space-y-4">
 				<div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
 					<h2 class="text-xl font-bold text-gray-800">Jugadores y goles</h2>
-					<div class="flex flex-col sm:flex-row gap-2">
+					<div class="flex flex-col sm:flex-row gap-2 w-full sm:w-auto">
 						<button
 							type="button"
 							on:click={() => agregarJugador(equipoLocalId)}
@@ -257,12 +278,22 @@
 				{:else}
 					<div class="space-y-3">
 						{#each estadisticas as est, i}
-							<div class="bg-gray-50 p-3 rounded-lg">
-								<div class="flex flex-col sm:flex-row sm:items-center gap-3">
+							<div class="bg-gray-50 p-4 rounded-lg space-y-3">
+								<!-- Búsqueda de jugador -->
+								<div class="relative">
+									<input
+										type="text"
+										placeholder="Buscar jugador por nombre..."
+										bind:value={est.busqueda}
+										class="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-green-500"
+									/>
+								</div>
+								
+								<!-- Select de jugador -->
 								<select
 									bind:value={est.jugador_id}
 									required
-									class="flex-1 px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-green-500"
+									class="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-green-500"
 								>
 									<option value="">Seleccionar jugador</option>
 									{#if est.jugador_id && !existeJugador(est.jugador_id)}
@@ -270,29 +301,49 @@
 											Jugador no disponible (ID {est.jugador_id})
 										</option>
 									{/if}
-									{#each jugadores as jugador}
+									{#each filtrarJugadores(i) as jugador}
 										<option value={String(jugador.id)}>{jugador.nombre} {jugador.apodo ? `"${jugador.apodo}"` : ''}</option>
 									{/each}
 								</select>
-									<div class="flex items-center gap-3 sm:gap-2 sm:w-auto">
-										<span class="text-sm text-gray-600 font-medium min-w-20">
-											{est.equipo_id == equipoLocalId ? 'Local' : 'Visitante'}
-										</span>
+
+								<!-- Team, Goles y Eliminar -->
+								<div class="flex flex-col sm:flex-row sm:items-center gap-3">
+									<span class="text-sm text-gray-600 font-medium min-w-20 sm:min-w-24">
+										{est.equipo_id == equipoLocalId ? '🏠 Local' : '✈️ Visitante'}
+									</span>
+									
+									<!-- Controles de goles -->
+									<div class="flex items-center gap-2 flex-1">
+										<button
+											type="button"
+											on:click={() => decrementarGoles(i)}
+											class="bg-red-500 hover:bg-red-600 text-white px-3 py-1 rounded-lg text-sm font-bold"
+										>
+											−
+										</button>
 										<input
 											type="number"
 											bind:value={est.goles}
 											min="0"
 											required
-											class="w-20 px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-green-500"
+											class="w-16 px-3 py-1 border border-gray-300 rounded-lg text-center text-sm focus:outline-none focus:ring-2 focus:ring-green-500"
 										/>
 										<button
 											type="button"
-											on:click={() => eliminarJugador(i)}
-											class="text-red-600 hover:text-red-800 font-bold text-xl px-2"
+											on:click={() => incrementarGoles(i)}
+											class="bg-green-500 hover:bg-green-600 text-white px-3 py-1 rounded-lg text-sm font-bold"
 										>
-											×
+											+
 										</button>
 									</div>
+
+									<button
+										type="button"
+										on:click={() => eliminarJugador(i)}
+										class="text-red-600 hover:text-red-800 font-bold text-lg px-2 py-1 text-center"
+									>
+										×
+									</button>
 								</div>
 							</div>
 						{/each}
