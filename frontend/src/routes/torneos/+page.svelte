@@ -23,6 +23,7 @@
 
 	let loading = true;
 	let error = null;
+	let warning = null;
 
 	let torneos = [];
 	let equiposTorneo = [];
@@ -68,14 +69,36 @@
 	async function cargarTodo() {
 		loading = true;
 		error = null;
+		warning = null;
 		try {
-			const [torneosData, equiposData, partidosData, jugadoresTorneoData, jugadoresData] = await Promise.all([
+			const [torneosRes, equiposRes, partidosRes, jugadoresTorneoRes, jugadoresRes] = await Promise.allSettled([
 				fetchTorneos(),
 				fetchEquiposTorneo(),
 				fetchPartidosTorneo(),
 				fetchJugadoresTorneo(),
 				fetchJugadores()
 			]);
+
+			if (torneosRes.status === 'rejected') {
+				throw torneosRes.reason;
+			}
+
+			const torneosData = torneosRes.value;
+			const equiposData = equiposRes.status === 'fulfilled' ? equiposRes.value : [];
+			const partidosData = partidosRes.status === 'fulfilled' ? partidosRes.value : [];
+			const jugadoresTorneoData =
+				jugadoresTorneoRes.status === 'fulfilled' ? jugadoresTorneoRes.value : [];
+			const jugadoresData = jugadoresRes.status === 'fulfilled' ? jugadoresRes.value : [];
+
+			const fallosParciales = [];
+			if (equiposRes.status === 'rejected') fallosParciales.push('equipos de torneo');
+			if (partidosRes.status === 'rejected') fallosParciales.push('partidos de torneo');
+			if (jugadoresTorneoRes.status === 'rejected') fallosParciales.push('planteles del torneo');
+			if (jugadoresRes.status === 'rejected') fallosParciales.push('jugadores base');
+
+			if (fallosParciales.length > 0) {
+				warning = `Se cargó parcialmente. Falló: ${fallosParciales.join(', ')}.`;
+			}
 
 			torneos = torneosData.sort((a, b) => new Date(b.fecha_creacion) - new Date(a.fecha_creacion));
 			equiposTorneo = equiposData;
@@ -89,7 +112,7 @@
 				selectedTorneoId = torneos[0] ? String(torneos[0].id) : '';
 			}
 		} catch (e) {
-			error = e.message;
+			error = e?.message || 'No se pudo cargar torneos';
 		} finally {
 			loading = false;
 		}
@@ -447,8 +470,21 @@
 		<div class="bg-red-50 border border-red-200 rounded-lg p-4 text-red-700">
 			<p class="font-semibold">Error:</p>
 			<p>{error}</p>
+			<button
+				type="button"
+				on:click={cargarTodo}
+				class="mt-3 inline-block bg-red-600 hover:bg-red-700 text-white text-sm font-semibold px-4 py-2 rounded-lg"
+			>
+				Reintentar
+			</button>
 		</div>
 	{:else}
+		{#if warning}
+			<div class="bg-yellow-50 border border-yellow-200 rounded-lg p-4 text-yellow-800">
+				<p class="font-semibold">Aviso:</p>
+				<p>{warning}</p>
+			</div>
+		{/if}
 		<div class="grid grid-cols-1 xl:grid-cols-3 gap-6">
 			<section class="xl:col-span-1 space-y-4">
 				<div class="bg-white rounded-lg shadow-md p-4 space-y-3">
