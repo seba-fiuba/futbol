@@ -182,8 +182,12 @@ export async function eliminarPartido(partidoId) {
 	return response.json();
 }
 
-export async function fetchTorneos() {
-	return getJson('/torneos/', 'Error al cargar torneos');
+export async function fetchTorneos({ limit = 20, offset = 0 } = {}) {
+	const params = new URLSearchParams({
+		limit: String(limit),
+		offset: String(offset)
+	});
+	return getJson(`/torneos/?${params.toString()}`, 'Error al cargar torneos');
 }
 
 export async function crearTorneo(torneoData) {
@@ -224,6 +228,14 @@ export async function fetchEquiposTorneo() {
 	return getJson('/torneos/equipos', 'Error al cargar equipos de torneo');
 }
 
+export async function fetchEquiposDeTorneo(torneoId, { limit = 200, offset = 0 } = {}) {
+	const params = new URLSearchParams({
+		limit: String(limit),
+		offset: String(offset)
+	});
+	return getJson(`/torneos/${torneoId}/equipos?${params.toString()}`, 'Error al cargar equipos del torneo');
+}
+
 export async function crearEquipoTorneo(equipoData) {
 	const response = await fetch(`${API_BASE}/torneos/equipos`, {
 		method: 'POST',
@@ -262,6 +274,14 @@ export async function fetchJugadoresTorneo() {
 	return getJson('/torneos/jugadores', 'Error al cargar jugadores de torneo');
 }
 
+export async function fetchJugadoresDeTorneo(torneoId, { limit = 500, offset = 0 } = {}) {
+	const params = new URLSearchParams({
+		limit: String(limit),
+		offset: String(offset)
+	});
+	return getJson(`/torneos/${torneoId}/jugadores?${params.toString()}`, 'Error al cargar jugadores del torneo');
+}
+
 export async function crearJugadorTorneo(jugadorData) {
 	const response = await fetch(`${API_BASE}/torneos/jugadores`, {
 		method: 'POST',
@@ -298,6 +318,14 @@ export async function eliminarJugadorTorneo(jugadorTorneoId) {
 
 export async function fetchPartidosTorneo() {
 	return getJson('/torneos/partidos', 'Error al cargar partidos de torneo');
+}
+
+export async function fetchPartidosDeTorneo(torneoId, { limit = 300, offset = 0 } = {}) {
+	const params = new URLSearchParams({
+		limit: String(limit),
+		offset: String(offset)
+	});
+	return getJson(`/torneos/${torneoId}/partidos?${params.toString()}`, 'Error al cargar partidos del torneo');
 }
 
 export async function crearPartidoTorneo(partidoData) {

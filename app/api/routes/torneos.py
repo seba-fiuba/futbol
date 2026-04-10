@@ -1,6 +1,6 @@
 from datetime import datetime
 
-from fastapi import APIRouter, Depends, HTTPException
+from fastapi import APIRouter, Depends, HTTPException, Query
 from sqlmodel import Session, select
 
 from app.core.database import get_session
@@ -24,8 +24,14 @@ router = APIRouter(prefix="/torneos", tags=["Torneos"])
 
 
 @router.get("/", response_model=list[TorneoRead])
-def listar_torneos(session: Session = Depends(get_session)):
-    torneos = session.exec(select(Torneo)).all()
+def listar_torneos(
+    session: Session = Depends(get_session),
+    limit: int = Query(default=20, ge=1, le=200),
+    offset: int = Query(default=0, ge=0),
+):
+    torneos = session.exec(
+        select(Torneo).order_by(Torneo.id).offset(offset).limit(limit)
+    ).all()
     return [
         TorneoRead(
             id=t.id,
@@ -122,9 +128,18 @@ def listar_equipos_torneo(session: Session = Depends(get_session)):
 
 
 @router.get("/{torneo_id}/equipos", response_model=list[EquipoTorneoRead])
-def listar_equipos_de_torneo(torneo_id: int, session: Session = Depends(get_session)):
+def listar_equipos_de_torneo(
+    torneo_id: int,
+    session: Session = Depends(get_session),
+    limit: int = Query(default=200, ge=1, le=500),
+    offset: int = Query(default=0, ge=0),
+):
     equipos = session.exec(
-        select(EquipoTorneo).where(EquipoTorneo.torneo_id == torneo_id)
+        select(EquipoTorneo)
+        .where(EquipoTorneo.torneo_id == torneo_id)
+        .order_by(EquipoTorneo.id)
+        .offset(offset)
+        .limit(limit)
     ).all()
     return [
         EquipoTorneoRead(id=e.id, torneo_id=e.torneo_id, nombre=e.nombre)
@@ -216,6 +231,31 @@ def eliminar_equipo_torneo(
 @router.get("/jugadores", response_model=list[JugadorTorneoRead])
 def listar_jugadores_torneo(session: Session = Depends(get_session)):
     jugadores = session.exec(select(JugadorTorneo)).all()
+    return [
+        JugadorTorneoRead(
+            id=j.id,
+            equipo_torneo_id=j.equipo_torneo_id,
+            usuario_id=j.usuario_id,
+        )
+        for j in jugadores
+    ]
+
+
+@router.get("/{torneo_id}/jugadores", response_model=list[JugadorTorneoRead])
+def listar_jugadores_de_torneo(
+    torneo_id: int,
+    session: Session = Depends(get_session),
+    limit: int = Query(default=500, ge=1, le=1000),
+    offset: int = Query(default=0, ge=0),
+):
+    jugadores = session.exec(
+        select(JugadorTorneo)
+        .join(EquipoTorneo, JugadorTorneo.equipo_torneo_id == EquipoTorneo.id)
+        .where(EquipoTorneo.torneo_id == torneo_id)
+        .order_by(JugadorTorneo.id)
+        .offset(offset)
+        .limit(limit)
+    ).all()
     return [
         JugadorTorneoRead(
             id=j.id,
@@ -335,9 +375,18 @@ def listar_partidos_torneo(session: Session = Depends(get_session)):
 
 
 @router.get("/{torneo_id}/partidos", response_model=list[PartidoTorneoRead])
-def listar_partidos_de_torneo(torneo_id: int, session: Session = Depends(get_session)):
+def listar_partidos_de_torneo(
+    torneo_id: int,
+    session: Session = Depends(get_session),
+    limit: int = Query(default=300, ge=1, le=1000),
+    offset: int = Query(default=0, ge=0),
+):
     partidos = session.exec(
-        select(PartidoTorneo).where(PartidoTorneo.torneo_id == torneo_id)
+        select(PartidoTorneo)
+        .where(PartidoTorneo.torneo_id == torneo_id)
+        .order_by(PartidoTorneo.id)
+        .offset(offset)
+        .limit(limit)
     ).all()
     return [
         PartidoTorneoRead(
