@@ -17,6 +17,9 @@ config = context.config
 # Sobrescribir la URL de sqlalchemy con la del .env
 database_url = os.getenv("DATABASE_URL")
 if database_url:
+    database_url = database_url.strip().replace('"', "").replace("'", "")
+    if database_url.startswith("postgres://"):
+        database_url = database_url.replace("postgres://", "postgresql://", 1)
     config.set_main_option("sqlalchemy.url", database_url)
 
 # Interpret the config file for Python logging.
