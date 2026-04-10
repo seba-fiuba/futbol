@@ -13,10 +13,10 @@
 		eliminarJugadorTorneo,
 		eliminarPartidoTorneo,
 		eliminarTorneo,
-		fetchEquiposTorneo,
+		fetchEquiposDeTorneo,
 		fetchJugadores,
-		fetchJugadoresTorneo,
-		fetchPartidosTorneo,
+		fetchJugadoresDeTorneo,
+		fetchPartidosDeTorneo,
 		fetchTorneos
 	} from '$lib/api';
 	import { toast } from '$lib/stores/toast';
@@ -30,6 +30,9 @@
 	let partidosTorneo = [];
 	let jugadoresTorneo = [];
 	let jugadoresBase = [];
+	let torneosLimit = 20;
+	let torneosOffset = 0;
+	let torneosPageHasMore = false;
 
 	let selectedTorneoId = '';
 
@@ -66,56 +69,103 @@
 		await cargarTodo();
 	});
 
+	async function cargarBase() {
+		const [torneosRes, jugadoresRes] = await Promise.allSettled([
+			fetchTorneos({ limit: torneosLimit, offset: torneosOffset }),
+			fetchJugadores()
+		]);
+
+		if (torneosRes.status === 'rejected') {
+			throw torneosRes.reason;
+		}
+
+		torneos = [...torneosRes.value].sort(
+			(a, b) => new Date(b.fecha_creacion) - new Date(a.fecha_creacion)
+		);
+		torneosPageHasMore = torneos.length === torneosLimit;
+
+		if (jugadoresRes.status === 'fulfilled') {
+			jugadoresBase = jugadoresRes.value;
+		} else {
+			jugadoresBase = [];
+			warning = warning
+				? `${warning} Falló: jugadores base.`
+				: 'Se cargó parcialmente. Falló: jugadores base.';
+		}
+
+		if (selectedTorneoId && torneos.some((t) => String(t.id) === String(selectedTorneoId))) {
+			selectedTorneoId = String(selectedTorneoId);
+		} else {
+			selectedTorneoId = torneos[0] ? String(torneos[0].id) : '';
+		}
+	}
+
+	async function cargarDetalleTorneo(torneoId) {
+		if (!torneoId) {
+			equiposTorneo = [];
+			partidosTorneo = [];
+			jugadoresTorneo = [];
+			return;
+		}
+
+		const [equiposRes, partidosRes, jugadoresTorneoRes] = await Promise.allSettled([
+			fetchEquiposDeTorneo(torneoId),
+			fetchPartidosDeTorneo(torneoId),
+			fetchJugadoresDeTorneo(torneoId)
+		]);
+
+		equiposTorneo = equiposRes.status === 'fulfilled' ? equiposRes.value : [];
+		partidosTorneo = partidosRes.status === 'fulfilled' ? partidosRes.value : [];
+		jugadoresTorneo = jugadoresTorneoRes.status === 'fulfilled' ? jugadoresTorneoRes.value : [];
+
+		const fallosParciales = [];
+		if (equiposRes.status === 'rejected') fallosParciales.push('equipos de torneo');
+		if (partidosRes.status === 'rejected') fallosParciales.push('partidos de torneo');
+		if (jugadoresTorneoRes.status === 'rejected') fallosParciales.push('planteles del torneo');
+
+		if (fallosParciales.length > 0) {
+			warning = warning
+				? `${warning} Falló: ${fallosParciales.join(', ')}.`
+				: `Se cargó parcialmente. Falló: ${fallosParciales.join(', ')}.`;
+		}
+	}
+
 	async function cargarTodo() {
 		loading = true;
 		error = null;
 		warning = null;
 		try {
-			const [torneosRes, equiposRes, partidosRes, jugadoresTorneoRes, jugadoresRes] = await Promise.allSettled([
-				fetchTorneos(),
-				fetchEquiposTorneo(),
-				fetchPartidosTorneo(),
-				fetchJugadoresTorneo(),
-				fetchJugadores()
-			]);
-
-			if (torneosRes.status === 'rejected') {
-				throw torneosRes.reason;
-			}
-
-			const torneosData = torneosRes.value;
-			const equiposData = equiposRes.status === 'fulfilled' ? equiposRes.value : [];
-			const partidosData = partidosRes.status === 'fulfilled' ? partidosRes.value : [];
-			const jugadoresTorneoData =
-				jugadoresTorneoRes.status === 'fulfilled' ? jugadoresTorneoRes.value : [];
-			const jugadoresData = jugadoresRes.status === 'fulfilled' ? jugadoresRes.value : [];
-
-			const fallosParciales = [];
-			if (equiposRes.status === 'rejected') fallosParciales.push('equipos de torneo');
-			if (partidosRes.status === 'rejected') fallosParciales.push('partidos de torneo');
-			if (jugadoresTorneoRes.status === 'rejected') fallosParciales.push('planteles del torneo');
-			if (jugadoresRes.status === 'rejected') fallosParciales.push('jugadores base');
-
-			if (fallosParciales.length > 0) {
-				warning = `Se cargó parcialmente. Falló: ${fallosParciales.join(', ')}.`;
-			}
-
-			torneos = torneosData.sort((a, b) => new Date(b.fecha_creacion) - new Date(a.fecha_creacion));
-			equiposTorneo = equiposData;
-			partidosTorneo = partidosData;
-			jugadoresTorneo = jugadoresTorneoData;
-			jugadoresBase = jugadoresData;
-
-			if (selectedTorneoId && torneos.some((t) => String(t.id) === String(selectedTorneoId))) {
-				selectedTorneoId = String(selectedTorneoId);
-			} else {
-				selectedTorneoId = torneos[0] ? String(torneos[0].id) : '';
-			}
+			await cargarBase();
+			await cargarDetalleTorneo(selectedTorneoId);
 		} catch (e) {
 			error = e?.message || 'No se pudo cargar torneos';
 		} finally {
 			loading = false;
 		}
+	}
+
+	async function seleccionarTorneo(torneoId) {
+		selectedTorneoId = String(torneoId);
+		loading = true;
+		error = null;
+		warning = null;
+		try {
+			await cargarDetalleTorneo(selectedTorneoId);
+		} catch (e) {
+			error = e?.message || 'No se pudo cargar el detalle del torneo';
+		} finally {
+			loading = false;
+		}
+	}
+
+	async function siguientePaginaTorneos() {
+		torneosOffset += torneosLimit;
+		await cargarTodo();
+	}
+
+	async function paginaAnteriorTorneos() {
+		torneosOffset = Math.max(0, torneosOffset - torneosLimit);
+		await cargarTodo();
 	}
 
 	function formatFecha(fecha) {
@@ -151,6 +201,7 @@
 			});
 			nuevoTorneoNombre = '';
 			nuevoTorneoEstado = 'abierto';
+			torneosOffset = 0;
 			await cargarTodo();
 			selectedTorneoId = String(torneoCreado.id);
 			toast.success('Torneo creado con exito');
@@ -206,6 +257,9 @@
 			if (String(torneo.id) === String(selectedTorneoId)) {
 				selectedTorneoId = '';
 			}
+			if (torneos.length === 1 && torneosOffset > 0) {
+				torneosOffset = Math.max(0, torneosOffset - torneosLimit);
+			}
 			await cargarTodo();
 			toast.success('Torneo eliminado con exito');
 		} catch (e) {
@@ -229,7 +283,7 @@
 				nombre: nuevoEquipoNombre.trim()
 			});
 			nuevoEquipoNombre = '';
-			await cargarTodo();
+			await cargarDetalleTorneo(selectedTorneoId);
 			toast.success('Equipo agregado al torneo');
 		} catch (e) {
 			toast.error(e.message || 'No se pudo crear el equipo');
@@ -253,7 +307,7 @@
 		}
 		try {
 			await actualizarEquipoTorneo(editEquipoId, { nombre: editEquipoNombre.trim() });
-			await cargarTodo();
+			await cargarDetalleTorneo(selectedTorneoId);
 			cancelarEdicionEquipo();
 			toast.success('Equipo actualizado');
 		} catch (e) {
@@ -274,7 +328,7 @@
 		pendingDeleteEquipoId = null;
 		try {
 			await eliminarEquipoTorneo(equipo.id);
-			await cargarTodo();
+			await cargarDetalleTorneo(selectedTorneoId);
 			toast.success('Equipo eliminado');
 		} catch (e) {
 			toast.error(e.message || 'No se pudo eliminar el equipo');
@@ -305,7 +359,7 @@
 			nuevoPartidoLocalId = '';
 			nuevoPartidoVisitanteId = '';
 			nuevaFase = 'liga';
-			await cargarTodo();
+			await cargarDetalleTorneo(selectedTorneoId);
 			toast.success('Partido de torneo creado');
 		} catch (e) {
 			toast.error(e.message || 'No se pudo crear el partido');
@@ -342,7 +396,7 @@
 				fase: editPartidoFase,
 				jugado: editPartidoJugado
 			});
-			await cargarTodo();
+			await cargarDetalleTorneo(selectedTorneoId);
 			cancelarEdicionPartido();
 			toast.success('Partido actualizado');
 		} catch (e) {
@@ -363,7 +417,7 @@
 		pendingDeletePartidoId = null;
 		try {
 			await eliminarPartidoTorneo(partido.id);
-			await cargarTodo();
+			await cargarDetalleTorneo(selectedTorneoId);
 			toast.success('Partido eliminado');
 		} catch (e) {
 			toast.error(e.message || 'No se pudo eliminar el partido');
@@ -390,7 +444,7 @@
 				usuario_id: Number(nuevoJugadorUsuarioId)
 			});
 			nuevoJugadorUsuarioId = '';
-			await cargarTodo();
+			await cargarDetalleTorneo(selectedTorneoId);
 			toast.success('Jugador agregado al torneo');
 		} catch (e) {
 			toast.error(e.message || 'No se pudo agregar el jugador');
@@ -416,7 +470,7 @@
 			await actualizarJugadorTorneo(editJugadorTorneoId, {
 				equipo_torneo_id: Number(editJugadorEquipoId)
 			});
-			await cargarTodo();
+			await cargarDetalleTorneo(selectedTorneoId);
 			cancelarEdicionJugadorTorneo();
 			toast.success('Jugador movido de equipo');
 		} catch (e) {
@@ -437,7 +491,7 @@
 
 		try {
 			await eliminarJugadorTorneo(jugadorTorneo.id);
-			await cargarTodo();
+			await cargarDetalleTorneo(selectedTorneoId);
 			toast.success('Jugador eliminado del torneo');
 		} catch (e) {
 			toast.error(e.message || 'No se pudo eliminar el jugador del torneo');
@@ -514,6 +568,27 @@
 
 				<div class="bg-white rounded-lg shadow-md p-4 space-y-3">
 					<h2 class="text-lg font-bold text-gray-800">Torneos ({torneos.length})</h2>
+					<div class="flex items-center justify-between text-xs text-gray-600">
+						<span>Pagina {Math.floor(torneosOffset / torneosLimit) + 1}</span>
+						<div class="flex items-center gap-2">
+							<button
+								type="button"
+								on:click={paginaAnteriorTorneos}
+								disabled={torneosOffset === 0}
+								class="px-2 py-1 rounded border border-gray-300 disabled:opacity-50"
+							>
+								Anterior
+							</button>
+							<button
+								type="button"
+								on:click={siguientePaginaTorneos}
+								disabled={!torneosPageHasMore}
+								class="px-2 py-1 rounded border border-gray-300 disabled:opacity-50"
+							>
+								Siguiente
+							</button>
+						</div>
+					</div>
 					{#if torneos.length === 0}
 						<p class="text-gray-600 text-sm">Aun no hay torneos registrados.</p>
 					{:else}
@@ -541,7 +616,7 @@
 										<div class="flex items-start justify-between gap-2">
 											<button
 												type="button"
-												on:click={() => (selectedTorneoId = String(torneo.id))}
+												on:click={() => seleccionarTorneo(torneo.id)}
 												class="text-left flex-1"
 											>
 												<h3 class="font-semibold text-gray-800">{torneo.nombre}</h3>
