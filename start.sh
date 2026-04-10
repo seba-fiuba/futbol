@@ -1,6 +1,8 @@
 #!/bin/bash
 # Script de inicio para Railway - Ejecuta migraciones antes de iniciar el servidor
 
+set -euo pipefail
+
 echo "🚀 Ejecutando migraciones de Alembic..."
 alembic upgrade head
 
