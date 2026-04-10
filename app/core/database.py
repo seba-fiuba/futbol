@@ -6,7 +6,10 @@ from sqlmodel import SQLModel, Session, create_engine
 
 load_dotenv()
 
-DATABASE_URL = os.getenv("DATABASE_URL") or "sqlite:///./futbol.db"
+raw_database_url = os.getenv("DATABASE_URL", "")
+DATABASE_URL = raw_database_url.strip().replace('"', "").replace("'", "")
+if not DATABASE_URL:
+    DATABASE_URL = "sqlite:///./futbol.db"
 
 if DATABASE_URL.startswith("postgres://"):
     DATABASE_URL = DATABASE_URL.replace("postgres://", "postgresql://", 1)
@@ -14,7 +17,21 @@ if DATABASE_URL.startswith("postgres://"):
 is_production = (
     os.getenv("RAILWAY_ENVIRONMENT") is not None or os.getenv("RENDER") is not None
 )
-engine = create_engine(DATABASE_URL, echo=not is_production)
+
+engine_kwargs = {"echo": not is_production}
+
+if DATABASE_URL.startswith("postgresql://"):
+    engine_kwargs.update(
+        {
+            "pool_size": 10,
+            "max_overflow": 20,
+            "pool_pre_ping": True,
+            "pool_recycle": 300,
+            "connect_args": {"connect_timeout": 10},
+        }
+    )
+
+engine = create_engine(DATABASE_URL, **engine_kwargs)
 
 
 def get_session():
