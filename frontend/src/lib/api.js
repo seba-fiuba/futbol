@@ -2,6 +2,72 @@
 // En desarrollo usa localhost, en producción usa variable de entorno
 const API_BASE = import.meta.env.VITE_API_URL || 'http://localhost:8000';
 
+const RETRYABLE_STATUS = new Set([502, 503, 504, 522, 524]);
+
+function sleep(ms) {
+	return new Promise((resolve) => setTimeout(resolve, ms));
+}
+
+async function fetchWithRetry(url, options = {}, config = {}) {
+	const {
+		retries = 2,
+		retryDelayMs = 600,
+		timeoutMs = 20000
+	} = config;
+
+	const method = (options.method || 'GET').toUpperCase();
+	const shouldRetry = method === 'GET';
+
+	let lastError = null;
+
+	for (let attempt = 0; attempt <= retries; attempt++) {
+		const controller = new AbortController();
+		const timeoutId = setTimeout(() => controller.abort(), timeoutMs);
+
+		try {
+			const response = await fetch(url, {
+				...options,
+				signal: controller.signal
+			});
+
+			clearTimeout(timeoutId);
+
+			const canRetryStatus = shouldRetry && RETRYABLE_STATUS.has(response.status);
+			const hasMoreAttempts = attempt < retries;
+
+			if (canRetryStatus && hasMoreAttempts) {
+				await sleep(retryDelayMs * (attempt + 1));
+				continue;
+			}
+
+			return response;
+		} catch (error) {
+			clearTimeout(timeoutId);
+			lastError = error;
+
+			if (!shouldRetry || attempt >= retries) {
+				throw error;
+			}
+
+			await sleep(retryDelayMs * (attempt + 1));
+		}
+	}
+
+	throw lastError || new Error('Error de red');
+}
+
+async function getJson(path, fallbackMessage) {
+	try {
+		const response = await fetchWithRetry(`${API_BASE}${path}`);
+		if (!response.ok) {
+			throw new Error(await getErrorMessage(response, fallbackMessage));
+		}
+		return response.json();
+	} catch {
+		throw new Error(`${fallbackMessage} (intenta nuevamente en unos segundos)`);
+	}
+}
+
 async function getErrorMessage(response, fallback) {
 	let message = fallback;
 	try {
@@ -14,9 +80,7 @@ async function getErrorMessage(response, fallback) {
 }
 
 export async function fetchJugadores() {
-	const response = await fetch(`${API_BASE}/Jugadores/`);
-	if (!response.ok) throw new Error('Error al cargar jugadores');
-	return response.json();
+	return getJson('/Jugadores/', 'Error al cargar jugadores');
 }
 
 export async function cargarJugador(jugadorData) {
@@ -70,21 +134,15 @@ export async function eliminarJugador(jugadorId) {
 }
 
 export async function fetchEquipos() {
-	const response = await fetch(`${API_BASE}/equipos/`);
-	if (!response.ok) throw new Error('Error al cargar equipos');
-	return response.json();
+	return getJson('/equipos/', 'Error al cargar equipos');
 }
 
 export async function fetchPartidos() {
-	const response = await fetch(`${API_BASE}/partidos/`);
-	if (!response.ok) throw new Error('Error al cargar partidos');
-	return response.json();
+	return getJson('/partidos/', 'Error al cargar partidos');
 }
 
 export async function fetchEstadisticas() {
-	const response = await fetch(`${API_BASE}/estadisticas/`);
-	if (!response.ok) throw new Error('Error al cargar estadísticas');
-	return response.json();
+	return getJson('/estadisticas/', 'Error al cargar estadísticas');
 }
 
 export async function crearPartido(partidoData) {
@@ -125,9 +183,7 @@ export async function eliminarPartido(partidoId) {
 }
 
 export async function fetchTorneos() {
-	const response = await fetch(`${API_BASE}/torneos/`);
-	if (!response.ok) throw new Error('Error al cargar torneos');
-	return response.json();
+	return getJson('/torneos/', 'Error al cargar torneos');
 }
 
 export async function crearTorneo(torneoData) {
@@ -165,9 +221,7 @@ export async function eliminarTorneo(torneoId) {
 }
 
 export async function fetchEquiposTorneo() {
-	const response = await fetch(`${API_BASE}/torneos/equipos`);
-	if (!response.ok) throw new Error('Error al cargar equipos de torneo');
-	return response.json();
+	return getJson('/torneos/equipos', 'Error al cargar equipos de torneo');
 }
 
 export async function crearEquipoTorneo(equipoData) {
@@ -205,9 +259,7 @@ export async function eliminarEquipoTorneo(equipoTorneoId) {
 }
 
 export async function fetchJugadoresTorneo() {
-	const response = await fetch(`${API_BASE}/torneos/jugadores`);
-	if (!response.ok) throw new Error('Error al cargar jugadores de torneo');
-	return response.json();
+	return getJson('/torneos/jugadores', 'Error al cargar jugadores de torneo');
 }
 
 export async function crearJugadorTorneo(jugadorData) {
@@ -245,9 +297,7 @@ export async function eliminarJugadorTorneo(jugadorTorneoId) {
 }
 
 export async function fetchPartidosTorneo() {
-	const response = await fetch(`${API_BASE}/torneos/partidos`);
-	if (!response.ok) throw new Error('Error al cargar partidos de torneo');
-	return response.json();
+	return getJson('/torneos/partidos', 'Error al cargar partidos de torneo');
 }
 
 export async function crearPartidoTorneo(partidoData) {
