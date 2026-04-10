@@ -7,6 +7,7 @@
 		{ href: '/', label: 'Inicio', icon: '🏠' },
 		{ href: '/jugadores', label: 'Jugadores', icon: '👥' },
 		{ href: '/equipos', label: 'Equipos', icon: '🏆' },
+		{ href: '/torneos', label: 'Torneos', icon: '🏟️' },
 		{ href: '/partidos', label: 'Partidos', icon: '⚽' },
 		{ href: '/goleadores', label: 'Goleadores', icon: '🎯' }
 	];
