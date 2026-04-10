@@ -1,7 +1,9 @@
 from fastapi import APIRouter, Depends, HTTPException
 from sqlmodel import Session, delete, select
-from database import get_session
-from models import Partido, EstadisticaPartido, PartidoCreate
+
+from app.core.database import get_session
+from app.models.entities import EstadisticaPartido, Partido
+from app.schemas.common import PartidoCreate
 
 router = APIRouter(prefix="/partidos", tags=["Partidos"])
 

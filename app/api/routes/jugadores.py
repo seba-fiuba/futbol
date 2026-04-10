@@ -2,8 +2,10 @@ import base64
 
 from fastapi import APIRouter, Depends, File, HTTPException, UploadFile
 from sqlmodel import Session, select
-from database import get_session
-from models import EstadisticaPartido, Jugador, JugadorCreate
+
+from app.core.database import get_session
+from app.models.entities import EstadisticaPartido, Jugador
+from app.schemas.common import JugadorCreate
 
 router = APIRouter(prefix="/Jugadores", tags=["Jugadores"])
 
@@ -46,13 +48,8 @@ async def upload_imagen_jugador(archivo: UploadFile = File(...)):
     if len(content) > 5 * 1024 * 1024:
         raise HTTPException(status_code=400, detail="La imagen supera 5MB")
 
-    # Convertir a base64
     base64_content = base64.b64encode(content).decode("utf-8")
-
-    # Determinar el tipo de media
     media_type = archivo.content_type or "image/jpeg"
-
-    # Devolver URL data con base64
     image_data_url = f"data:{media_type};base64,{base64_content}"
     return {"url": image_data_url}
 

@@ -1,7 +1,8 @@
 from fastapi import APIRouter, Depends
 from sqlmodel import Session, select
-from database import get_session
-from models import Equipo
+
+from app.core.database import get_session
+from app.models.entities import Equipo
 
 router = APIRouter(prefix="/equipos", tags=["Equipos"])
 
